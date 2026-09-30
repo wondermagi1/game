@@ -71,7 +71,7 @@ func _physics_process(delta: float) -> void:
 				var amount = damage
 				if game.player.stats.role == 2 and traveled > 420:
 					amount *= 1.25 + game.player.stats.bonus("distance")
-				body.hurt(amount,critical,true)
+				body.hurt(amount,critical,true,source)
 				game.presentation_fx.emit("impact",hit.position+height_offset,direction,style,.7)
 				game.player.skills.on_hit(body,self)
 			exclude.append(body.get_rid())
@@ -117,7 +117,7 @@ func finish(allow_return: bool = false) -> void:
 		if powder:
 			for enemy in game.enemies:
 				if enemy.global_position.distance_to(global_position)<explosion: enemy.blast_mark = 6
-		game.explode(global_position,explosion,damage)
+		game.explode(global_position,explosion,damage,true,source)
 		game.fx.combo_burst(global_position,1,"")
 		game.sound.play("explosion")
 	if powder and game.state=="combat":
@@ -172,7 +172,7 @@ func wide_step(endpoint: Vector2, step: float) -> void:
 		if closest.distance_to(enemy.global_position)>hit_width+enemy.radius: continue
 		var sight = PhysicsRayQueryParameters2D.create(global_position,enemy.global_position,1)
 		if not space.intersect_ray(sight).is_empty(): continue
-		enemy.hurt(damage,critical,true)
+		enemy.hurt(damage,critical,true,source)
 		game.player.skills.on_hit(enemy,self)
 		exclude.append(enemy.get_rid())
 		pierce -= 1

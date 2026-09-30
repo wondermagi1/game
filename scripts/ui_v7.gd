@@ -1,10 +1,16 @@
 extends "res://scripts/ui_v6.gd"
 const V7 = preload("res://scripts/v7_catalog.gd")
+const Graph = preload("res://scripts/room_graph.gd")
 
 func show_menu() -> void:
 	super.show_menu()
 	for child in overlay.get_children():
 		if child is Label: child.text = child.text.replace("合刃同行  0.6.2","九流化境  0.7.0")
+
+func _process(delta: float) -> void:
+	super._process(delta)
+	if game.state=="combat" and game.rooms.active and not game.rooms.objective_state.is_empty() and not game.rooms.objective_state.get("done",false):
+		detail_label.text += "  ·  "+game.rooms.objective_text()
 
 func show_rewards(choices: Array) -> void:
 	var has_evolution = choices.any(func(choice): return choice[3]=="evolution")
@@ -63,6 +69,44 @@ func show_characters() -> void:
 func show_pause(stats_view: bool = false) -> void:
 	super.show_pause(stats_view)
 	button(overlay,"本局流派与进化",Rect2(560,865,800,65),show_build_panel,Color("#85cfc2"))
+
+func show_end(victory: bool) -> void:
+	super.show_end(victory)
+	button(overlay,"查看详细战报",Rect2(760,795,400,55),show_run_report,Color("#85cfc2"))
+
+func show_run_report() -> void:
+	page_start("本局战报 · 构筑复盘","伤害占比、路线和选择记录只用于帮助判断构筑，不影响掉落。","run_report")
+	var t = game.telemetry
+	var damage_lines = t.damage_lines(7)
+	var route_names: Array[String] = []
+	if game.rooms.data.has("rooms"):
+		for id in t.rooms:
+			if game.rooms.data.rooms.has(id): route_names.append(Graph.NAMES[game.rooms.data.rooms[id].kind])
+	var enemy_lines: Array[String] = []
+	for key in t.kills_by_kind:
+		var kind = int(key)
+		if kind>=0 and kind<C.ENEMIES.size(): enemy_lines.append("%s ×%d"%[C.ENEMIES[kind],t.kills_by_kind[key]])
+	box(overlay,Rect2(120,300,535,570),INK,Color("#4b6878"))
+	box(overlay,Rect2(690,300,535,570),INK,Color("#75668f"))
+	box(overlay,Rect2(1260,300,535,570),INK,Color("#806653"))
+	label(overlay,"伤害构成",Rect2(155,330,460,48),31,Color("#91ddcf"))
+	label(overlay,"\n".join(damage_lines) if not damage_lines.is_empty() else "尚无有效伤害记录",Rect2(155,400,460,350),23)
+	label(overlay,"命中 %d · 暴击 %d\n承伤 %.0f · 治疗 %.0f"%[t.hits,t.critical_hits,t.damage_taken,t.healing],Rect2(155,750,460,85),21,GOLD)
+	label(overlay,"敌群与路线",Rect2(725,330,460,48),31,Color("#c5a8ed"))
+	label(overlay,"精英击破 %d · 首领击破 %d\n\n%s"%[t.elite_kills,t.boss_kills,"\n".join(enemy_lines.slice(0,9)) if not enemy_lines.is_empty() else "尚无击破记录"],Rect2(725,400,460,310),22)
+	label(overlay,"路线：%s"%(" → ".join(route_names) if not route_names.is_empty() else "传统关卡"),Rect2(725,735,460,100),20,GOLD)
+	label(overlay,"构筑与收益",Rect2(1295,330,460,48),31,Color("#efc67b"))
+	var reward_text = "\n".join(t.rewards.slice(-10)) if not t.rewards.is_empty() else "尚未选择局内奖励"
+	label(overlay,"%s\n%s\n\n%s"%[game.player.skills.build_name() if is_instance_valid(game.player) else "未成型",(" / ".join(game.player.skills.build_tags()) if is_instance_valid(game.player) and not game.player.skills.build_tags().is_empty() else "无构筑标签"),reward_text],Rect2(1295,400,460,330),22)
+	label(overlay,"重抽 %d · 装备 %d\n%s"%[t.rerolls,t.gear_found,report_advice()],Rect2(1295,750,460,90),20,GOLD)
+	button(overlay,"返回结算",Rect2(620,930,680,62),show_end.bind(game.won))
+
+func report_advice() -> String:
+	var t = game.telemetry
+	if t.damage_taken>game.player.stats.value("hp")*2.2: return "建议：补充防御、移速或控制路线。"
+	if game.player.skills.evolutions.size()<2: return "建议：优先让两项核心技能完成路线进化。"
+	if t.damage_lines(2).size()>=2: return "构筑已经形成双核心，可继续强化主伤害来源。"
+	return "尝试让普攻与技能围绕同一套构筑标签联动。"
 
 func codex_entries() -> Array:
 	var entries = super.codex_entries()

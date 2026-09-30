@@ -36,8 +36,8 @@ func run() -> void:
 	check(Graph.reachable(chapter_two),"chapter two sample graph is fully reachable")
 	check(chapter_two.get("sample",false),"chapter two uses authored sample route")
 	check(chapter_two.rooms.r1.neighbors.size()==3,"first battle presents safe and elite route choices")
-	check(chapter_two.rooms.cross.neighbors.has("shop") and chapter_two.rooms.cross.neighbors.has("hunt"),"second fork presents shop and hunt")
-	check(chapter_two.rooms.cross.objective=="defend" and chapter_two.rooms.hunt.objective=="hunt","sample route assigns objective rooms")
+	check(chapter_two.rooms.cross.neighbors.has("shop") and chapter_two.rooms.cross.neighbors.has("hunt") and chapter_two.rooms.cross.neighbors.has("seal"),"second fork presents shop, hunt and seal")
+	check(chapter_two.rooms.cross.objective=="defend" and chapter_two.rooms.hunt.objective=="hunt" and chapter_two.rooms.seal.objective=="seal","sample route assigns all objective rooms")
 	for id in chapter_two.rooms:
 		var room: Dictionary = chapter_two.rooms[id]
 		check(room.has("danger") and room.has("reward_hint") and room.has("enemy_hint"),"room %s exposes route information"%id)
@@ -70,6 +70,36 @@ func run() -> void:
 	var enhanced = skills.enhance_rewards(game.player.stats.reward_choices(game.rng,game.player.hp,false),game.rng,true)
 	check(enhanced.size()==3 and enhanced.count(enhanced[0])>=1,"forced reward keeps three-card contract")
 	check(enhanced.filter(func(c): return c[3]=="evolution").size()>=1,"elite reward protects an evolution choice")
+
+	game.rooms.enter("cross","r1")
+	check(game.rooms.objective_state.id=="defend" and game.rooms.objective_text().contains("灵石坚守"),"defend objective starts with visible status")
+	game.rooms.objective_state.time = 0.01
+	game.rooms.tick(0.02)
+	check(game.rooms.current().cleared and game.state=="reward","defend timer completes the room")
+	game.choose_reward(0)
+	game.rooms.enter("hunt","cross")
+	for i in range(12): game.rooms.tick(0.4)
+	check(is_instance_valid(game.rooms.objective_target) and game.rooms.objective_target.hunt_stacks==3,"hunt target receives three visible marks")
+	game.rooms.objective_target.dead = true
+	game.rooms.tick(0.1)
+	check(game.rooms.current().cleared and game.state=="reward","defeating hunt target completes the room")
+	game.choose_reward(0)
+	game.rooms.enter("seal","cross")
+	check(game.rooms.objective_state.id=="seal" and game.rooms.objective_state.points.size()==3,"seal objective creates three capture points")
+	for point in game.rooms.objective_state.points.duplicate():
+		game.player.global_position = point
+		game.rooms.tick(1.7)
+	game.rooms.tick(0.1)
+	check(game.rooms.current().cleared and game.state=="reward","capturing all seal points completes the room")
+
+	game.telemetry.record_damage(120,"skill_3",true)
+	game.telemetry.damage_taken += 20
+	game.telemetry.healing += 8
+	var telemetry_copy = game.telemetry.snapshot()
+	check(game.telemetry.damage_lines(3).size()>=1 and game.telemetry.critical_hits>=1,"telemetry summarizes damage and critical hits")
+	game.telemetry.reset()
+	game.telemetry.restore(telemetry_copy)
+	check(game.telemetry.damage_taken>=20 and game.telemetry.healing>=8 and game.telemetry.rooms.size()>=3,"telemetry snapshot restores route and survival data")
 
 	var report = {"checks":checks,"failures":failures}
 	var file = FileAccess.open("res://tests/regression_v7_results.json",FileAccess.WRITE)

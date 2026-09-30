@@ -225,6 +225,7 @@ func hurt(raw: float) -> void:
 	amount -= absorbed
 	hp -= amount
 	game.taken += amount
+	game.telemetry.damage_taken += amount
 	game.sound.play("hurt")
 	game.fx.number(global_position,amount,Color("#ff8090"))
 	visual.flash = 0.18
@@ -247,6 +248,7 @@ func heal(amount: float) -> void:
 	if dead: return
 	var restored = minf(stats.value("hp")-hp,amount*(1+stats.bonus("healing")))
 	hp += restored
+	game.telemetry.healing += restored
 	if restored > 0: game.fx.number(global_position,restored,Color("#89edb3"))
 
 func on_kill() -> void:

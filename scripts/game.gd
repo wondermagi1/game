@@ -21,6 +21,7 @@ var skip_boss_intro: bool = true
 var bindings = preload("res://scripts/input_bindings.gd").new()
 var abyss = preload("res://scripts/abyss_run.gd").new()
 var encounter = preload("res://scripts/encounter_rules.gd").new()
+var telemetry = preload("res://scripts/combat_telemetry.gd").new()
 var profile = Profile.new()
 var flow = Campaign.new()
 var director = WaveDirector.new()
@@ -223,6 +224,7 @@ func start_run(role: int, seed_value: int = -1, chapter: int = 1) -> void:
 	earned_gold = 0
 	earned_xp = 0
 	earned_gear = 0
+	telemetry.reset()
 	won = false
 	player = Player.new()
 	player.name = "Player"
@@ -405,14 +407,14 @@ func nearest_enemy(pos: Vector2, excluded: Array, radius: float):
 			closest = enemy
 	return closest
 
-func explode(pos: Vector2, radius: float, amount: float, apply_status: bool = true) -> void:
+func explode(pos: Vector2, radius: float, amount: float, apply_status: bool = true, source: String = "explosion") -> void:
 	if is_instance_valid(player): presentation_fx.emit("explosion",pos,Vector2.UP,player.stats.role,clampf(radius/65,1,4))
 	if is_instance_valid(rooms.scene): rooms.scene.damage_cover(pos,radius,amount)
 	fx.ring(pos,radius,Color("#fac883"))
 	fx.burst(pos,Color("#fac883"),20)
 	for enemy in enemies.duplicate():
 		if is_instance_valid(enemy) and enemy.global_position.distance_to(pos) < radius:
-			enemy.hurt(amount,false,apply_status)
+			enemy.hurt(amount,false,apply_status,source)
 
 func clear_attacks() -> void:
 	if is_instance_valid(presentation_fx): presentation_fx.clear()
@@ -490,6 +492,7 @@ func stage_finished() -> void:
 func choose_reward(index: int) -> void:
 	if state!="reward" or index<0 or index>=rewards.size(): return
 	var choice: Array = rewards[index]
+	telemetry.record_reward(choice)
 	if choice[3]=="evolution":
 		if not player.skills.apply_evolution(choice[0]): return
 	elif choice[3]=="gold":
@@ -531,6 +534,7 @@ func roll_rewards(source_rng: RandomNumberGenerator, round_end: bool = false, fo
 func reroll_rewards() -> void:
 	if state!="reward" or not is_instance_valid(player) or player.skills.rerolls<=0: return
 	player.skills.rerolls -= 1
+	telemetry.rerolls += 1
 	var source_rng: RandomNumberGenerator = rooms.reward_rng if rooms.active else rng
 	var force = rooms.active and rooms.current().kind in ["elite","secret"]
 	rewards = roll_rewards(source_rng,true,force)
@@ -609,6 +613,7 @@ func load_settings() -> void:
 	apply_window_resolution()
 
 func _draw() -> void:
+	if rooms.active: rooms.draw_objective()
 	for h in hazards:
 		draw_circle(h.p,h.radius,Color(1,0.2,0.35,0.13))
 		draw_arc(h.p,h.radius,0,TAU,48,Color("#ff8194"),3,true)
@@ -692,9 +697,11 @@ func add_xp(amount: int) -> void:
 func receive_gear(item: Dictionary) -> void:
 	if profile.receive_item(item):
 		earned_gear += 1
+		telemetry.gear_found += 1
 		notify_player("获得 %s · %s"%[Catalog.QUALITIES[int(item.quality)],profile.item_name(item)])
 
 func enemy_defeated(enemy) -> void:
+	telemetry.record_enemy(enemy)
 	var tier = 3 if enemy.kind==8 else (2 if enemy.is_boss() else (1 if enemy.elite else 0))
 	profile.discover("enemy_%d"%enemy.kind)
 	if tier>=2: profile.unlock("boss")

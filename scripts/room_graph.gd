@@ -48,6 +48,10 @@ static func generate_chapter_two(seed_value: int, rng: RandomNumberGenerator) ->
 	rooms.hunt.objective = "hunt"
 	rooms.hunt.reward_hint = "金币 / 定向装备"
 	rooms.hunt.danger = 3
+	rooms.seal = room("seal",4,0,"battle",2,rng)
+	rooms.seal.objective = "seal"
+	rooms.seal.reward_hint = "技能进化 / 高阶馈赠"
+	rooms.seal.danger = 2
 	rooms.boss = room("boss",5,0,"boss",2,rng)
 	rooms.boss.reward_hint = "首领宝箱 / 章节解锁"
 	rooms.boss.danger = 4
@@ -58,8 +62,10 @@ static func generate_chapter_two(seed_value: int, rng: RandomNumberGenerator) ->
 	connect_rooms(rooms,"elite","cross")
 	connect_rooms(rooms,"cross","shop")
 	connect_rooms(rooms,"cross","hunt")
+	connect_rooms(rooms,"cross","seal")
 	connect_rooms(rooms,"shop","boss")
 	connect_rooms(rooms,"hunt","boss")
+	connect_rooms(rooms,"seal","boss")
 	return {"version":VERSION,"seed":seed_value,"run_id":"%d-%d"%[Time.get_ticks_usec(),seed_value],"chapter":2,"current":"r0","entry":"","rooms":rooms,"revealed":true,"switches":0,"sample":true}
 static func room(id: String, x: int, y: int, kind: String, chapter: int, rng: RandomNumberGenerator) -> Dictionary:
 	var layout = ["open","pillars","lanes","center","ring"][rng.randi_range(0,4)]

@@ -335,7 +335,7 @@ func modifier_tick(delta: float) -> void:
 			copy.scale = Vector2.ONE*0.72
 			copy.visual.modulate.a = 0.55
 
-func hurt(raw: float, critical: bool = false, apply_status: bool = true) -> void:
+func hurt(raw: float, critical: bool = false, apply_status: bool = true, source: String = "skill") -> void:
 	if dead or state == "spawn" or game.state != "combat": return
 	var amount = clampf(raw*100.0/(100.0+armor),1.0,1.0e15)
 	var absorbed = minf(ward,amount)
@@ -343,6 +343,7 @@ func hurt(raw: float, critical: bool = false, apply_status: bool = true) -> void
 	amount -= absorbed
 	hp -= amount
 	game.dealt += minf(amount,maxf(0,hp+amount))
+	game.telemetry.record_damage(minf(amount,maxf(0,hp+amount)),"status" if not apply_status else source,critical)
 	game.fx.number(global_position,amount,Color("#ffe0a4") if critical else Color("#e7f1fa"),critical)
 	visual.flash = 0.09
 	if apply_status:
