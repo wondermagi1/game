@@ -1,5 +1,6 @@
 extends CharacterBody2D
 const Visual = preload("res://scripts/actor_visual.gd")
+const V7 = preload("res://scripts/v7_catalog.gd")
 var blast_mark: float = 0
 var ward: float = 0
 var fragment: bool = false
@@ -34,6 +35,11 @@ var pattern: int = 0
 var second_phase: bool = false
 var navigation_clock: float = 0
 var navigation_direction := Vector2.ZERO
+var elite_modifiers: Array[String] = []
+var modifier_clock: float = 0.0
+var drain_clock: float = 0.0
+var hunt_stacks: int = 0
+var summoned_copy: bool = false
 
 func is_boss() -> bool:
 	return kind in [4,5,6,7,8,12,13,14]
@@ -42,7 +48,7 @@ func _ready() -> void:
 	collision_layer = 4
 	collision_mask = 1
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
-	var hp_table = [34.0,48.0,32.0,90.0,980.0,1800.0,420.0,700.0,1600.0,54.0,38.0,42.0,1600.0,1750.0,1150.0]
+	var hp_table = [34.0,48.0,32.0,90.0,980.0,1800.0,420.0,700.0,1600.0,54.0,38.0,42.0,1600.0,1750.0,1150.0,46.0,58.0,42.0,64.0]
 	var difficulty: Dictionary = game.Catalog.DIFFICULTY[game.stage-1]
 	max_hp = hp_table[kind]*0.73*difficulty.hp*(1.0+(game.flow.round_number-1)*difficulty.round_growth)
 	if is_boss(): max_hp *= game.Catalog.PACING[game.stage-1].boss_hp
@@ -50,11 +56,21 @@ func _ready() -> void:
 	if game.flow.abyss: max_hp *= game.abyss.scaling().hp
 	hp = max_hp
 	radius = 43.0 if is_boss() else 23.0
-	speed = [142.0,125.0,110.0,80.0,96.0,75.0,80.0,85.0,68.0,85.0,150.0,95.0,74.0,90.0,76.0][kind]
+	speed = [142.0,125.0,110.0,80.0,96.0,75.0,80.0,85.0,68.0,85.0,150.0,95.0,74.0,90.0,76.0,92.0,108.0,165.0,82.0][kind]
 	speed *= difficulty.speed
-	if elite: speed *= 1.18
+	if elite:
+		var modifier_count = 2 if game.flow.abyss and game.flow.floor_number>=20 else 1
+		var modifier_pool = V7.ELITE_MODIFIERS.duplicate(true)
+		for i in range(modifier_count):
+			var selected: Dictionary = modifier_pool.pop_at(game.rng.randi_range(0,modifier_pool.size()-1))
+			elite_modifiers.append(selected.id)
+		if elite_modifiers.has("swift"): speed *= 1.42
+		else: speed *= 1.12
 	armor = 18 if kind in [3,4] else 0
-	damage = ([10.0,14.0,10.0,18.0,20.0,18.0,10.0,14.0,20.0,9.0,11.0,12.0,21.0,23.0,9.0][kind]+1.0)*difficulty.damage*0.83
+	if elite_modifiers.has("armored"):
+		armor += 24
+		ward = max_hp*0.28
+	damage = ([10.0,14.0,10.0,18.0,20.0,18.0,10.0,14.0,20.0,9.0,11.0,12.0,21.0,23.0,9.0,8.0,9.0,16.0,9.0][kind]+1.0)*difficulty.damage*0.83
 	if game.flow.abyss: damage *= game.abyss.scaling().damage
 	var shape = CollisionShape2D.new()
 	var circle = CircleShape2D.new()
@@ -63,12 +79,13 @@ func _ready() -> void:
 	add_child(shape)
 	visual = Visual.new()
 	visual.kind = kind+3 if kind>=9 else mini(kind+3,8)
-	visual.tint = [Color("#d78383"),Color("#dd9865"),Color("#b486d0"),Color("#8795bb"),Color("#deae74"),Color("#ed6e92"),Color("#7ed8b5"),Color("#e8b66d"),Color("#b799f2"),Color("#7dbbdc"),Color("#b6d56e"),Color("#c091ea"),Color("#e3a25c"),Color("#8d9fff"),Color("#d7bf96")][kind]
+	visual.tint = [Color("#d78383"),Color("#dd9865"),Color("#b486d0"),Color("#8795bb"),Color("#deae74"),Color("#ed6e92"),Color("#7ed8b5"),Color("#e8b66d"),Color("#b799f2"),Color("#7dbbdc"),Color("#b6d56e"),Color("#c091ea"),Color("#e3a25c"),Color("#8d9fff"),Color("#d7bf96"),Color("#ffe08a"),Color("#9ddf9a"),Color("#f2a36e"),Color("#b8d8f0")][kind]
 	visual.enemy_id = kind
 	visual.elite = elite
 	add_child(visual)
 	z_index = 4
 	cooldown = game.rng.randf_range(0.3,1.0)
+	modifier_clock = game.rng.randf_range(3.5,6.5)
 
 func _physics_process(delta: float) -> void:
 	if game.state != "combat" or dead: return
@@ -85,6 +102,7 @@ func _physics_process(delta: float) -> void:
 	mark_time = maxf(0,mark_time-delta)
 	sword_mark = maxf(0,sword_mark-delta)
 	powder_mark = maxf(0,powder_mark-delta)
+	drain_clock = maxf(0,drain_clock-delta)
 	burn_time = maxf(0,burn_time-delta)
 	poison_time = maxf(0,poison_time-delta)
 	if poison_time <= 0: poison_stacks = 0
@@ -114,7 +132,7 @@ func _physics_process(delta: float) -> void:
 	elif state == "charge":
 		timer -= delta
 		velocity = locked_dir*(640.0 if kind == 1 else 740.0)
-		if distance < radius+28: game.player.hurt(damage)
+		if distance < radius+28: hit_player(damage)
 		if timer <= 0 or is_on_wall():
 			state = "recover"
 			timer = 0.6
@@ -130,11 +148,11 @@ func _physics_process(delta: float) -> void:
 				var line = PhysicsRayQueryParameters2D.create(global_position,game.player.global_position,1)
 				navigation_direction = desire if get_world_2d().direct_space_state.intersect_ray(line).is_empty() else game.rooms.scene.navigate(global_position,game.player.global_position)
 			desire = navigation_direction
-		if kind in [2,9,11]:
+		if kind in [2,9,11,15,16,18]:
 			if distance < 340: desire *= -1
 			elif distance < 560: desire *= 0.0
 		if kind == 5 and distance < 420: desire *= 0.0
-		if kind in [0,3,10] and distance < 55+radius: desire *= 0.0
+		if kind in [0,3,10,17] and distance < 55+radius: desire *= 0.0
 		var separation = Vector2.ZERO
 		for other in game.enemies:
 			if other == self or not is_instance_valid(other): continue
@@ -144,12 +162,13 @@ func _physics_process(delta: float) -> void:
 				separation += diff/d*60
 		velocity = desire*speed+separation
 		var can_attack = cooldown <= 0
-		if can_attack and ((kind in [0,3,10] and distance < radius+60) or (kind in [1,2,9,11] and distance < 720) or is_boss()):
+		if can_attack and ((kind in [0,3,10,17] and distance < radius+85) or (kind in [1,2,9,11,15,16,18] and distance < 720) or is_boss()):
 			locked_dir = to_player.normalized()
 			state = "windup"
 			timer = 0.75 if kind != 0 else 0.4
 			if is_boss(): timer = 0.85
 	if slow_time>0: velocity *= 0.75 if is_boss() else 0.45
+	modifier_tick(delta)
 	velocity += knockback
 	knockback = knockback.move_toward(Vector2.ZERO,delta*700)
 	move_and_slide()
@@ -166,7 +185,7 @@ func execute_attack() -> void:
 	match kind:
 		0,3,10:
 			if global_position.distance_to(game.player.global_position) < radius+75:
-				game.player.hurt(damage)
+				hit_player(damage)
 			game.fx.ring(global_position,radius+50,Color("#ec8b80"))
 		1:
 			state = "charge"
@@ -183,6 +202,35 @@ func execute_attack() -> void:
 		11:
 			game.add_hazard(game.player.global_position,80,1.3,damage)
 			cooldown = 3.2
+		15:
+			for ally in game.enemies:
+				if ally!=self and is_instance_valid(ally) and ally.global_position.distance_to(global_position)<280:
+					ally.hp = minf(ally.max_hp,ally.hp+ally.max_hp*0.08)
+					ally.ward = maxf(ally.ward,ally.max_hp*0.08)
+			game.fx.ring(global_position,280,Color("#ffe08a"))
+			cooldown = 6.5
+		16:
+			game.add_hazard(game.player.global_position,105,1.0,damage*0.55)
+			game.player.slow_time = maxf(game.player.slow_time,2.5)
+			game.fx.sigils(game.player.global_position,105,Color("#9ddf9a"),2)
+			cooldown = 4.5
+		17:
+			game.fx.ring(global_position,125,Color("#ffad72"))
+			if global_position.distance_to(game.player.global_position)<145: hit_player(damage*1.8)
+			for other in game.enemies:
+				if other!=self and is_instance_valid(other) and other.global_position.distance_to(global_position)<125: other.hurt(damage*1.5,false,false)
+			hp = 0
+			die()
+		18:
+			if game.enemies.size()<10:
+				for i in range(2):
+					var child = game.spawn_enemy(0,game.safe_position(global_position+Vector2(75*(i*2-1),65)),false)
+					if is_instance_valid(child):
+						child.summoned_copy = true
+						child.hp *= 0.55
+						child.max_hp = child.hp
+			game.fx.sigils(global_position,100,Color("#b8d8f0"),2)
+			cooldown = 7.0
 		12:
 			var gap = pattern%5
 			for i in range(5):
@@ -261,6 +309,32 @@ func execute_attack() -> void:
 func shoot(dir: Vector2, shot_speed: float, amount: float) -> void:
 	game.spawn_projectile(global_position+dir*(radius+12),dir,{"enemy_shot":true,"damage":amount,"speed":shot_speed,"remaining":1700.0})
 
+func hit_player(amount: float) -> void:
+	game.player.hurt(amount)
+	if elite_modifiers.has("draining") and drain_clock<=0:
+		drain_clock = 5.0
+		for i in range(game.player.skills.cooldowns.size()): game.player.skills.cooldowns[i] += 0.55
+		game.fx.caption(game.player.global_position-Vector2(55,85),"吸能",Color("#c99bea"))
+
+func modifier_tick(delta: float) -> void:
+	if elite_modifiers.is_empty() or dead: return
+	modifier_clock -= delta
+	if modifier_clock>0: return
+	modifier_clock = 6.5
+	if elite_modifiers.has("commander"):
+		for ally in game.enemies:
+			if ally!=self and is_instance_valid(ally) and not ally.is_boss() and ally.global_position.distance_to(global_position)<300:
+				ally.ward = maxf(ally.ward,ally.max_hp*0.06)
+		game.fx.ring(global_position,300,Color("#e1c16b"))
+	if elite_modifiers.has("mirror") and game.enemies.size()<12:
+		var copy = game.spawn_enemy(kind,game.safe_position(global_position+Vector2(75,35)),false)
+		if is_instance_valid(copy):
+			copy.summoned_copy = true
+			copy.hp *= 0.25
+			copy.max_hp = copy.hp
+			copy.scale = Vector2.ONE*0.72
+			copy.visual.modulate.a = 0.55
+
 func hurt(raw: float, critical: bool = false, apply_status: bool = true) -> void:
 	if dead or state == "spawn" or game.state != "combat": return
 	var amount = clampf(raw*100.0/(100.0+armor),1.0,1.0e15)
@@ -295,6 +369,9 @@ func die() -> void:
 	game.player.on_kill()
 	game.fx.burst(global_position,visual.tint,18 if is_boss() else 8)
 	game.sound.play("hit")
+	if elite_modifiers.has("volatile"):
+		game.add_hazard(global_position,125,0.85,damage*1.25)
+		game.explode(global_position,125,damage*0.8,false)
 	var corpse = preload("res://scripts/actor_visual.gd").new()
 	corpse.kind = visual.kind
 	corpse.enemy_id = kind
@@ -330,7 +407,7 @@ func die() -> void:
 			if is_instance_valid(other):
 				game.enemies.erase(other)
 				other.queue_free()
-	if elite or is_boss() or game.rng.randf() < 0.13:
+	if not summoned_copy and (elite or is_boss() or game.rng.randf() < 0.13):
 		game.drop_heal(global_position,18 if elite else 10)
 	queue_free()
 
@@ -358,3 +435,10 @@ func _draw() -> void:
 		draw_arc(Vector2.ZERO,radius+10,0,TAU,4,Color("#c5ed99"),3,true)
 	if slow_time>0: draw_arc(Vector2.ZERO,radius+5,0,TAU,24,Color("#8cd3ff"),2,true)
 	if sword_mark>0 or powder_mark>0: draw_circle(Vector2(0,-radius-22),6,Color("#f1dc9a"))
+	if hunt_stacks>0:
+		draw_string(ThemeDB.fallback_font,Vector2(-7,-radius-28),str(hunt_stacks),HORIZONTAL_ALIGNMENT_LEFT,-1,18,Color("#ffd978"))
+	for i in range(elite_modifiers.size()):
+		var matches = V7.ELITE_MODIFIERS.filter(func(entry): return entry.id==elite_modifiers[i])
+		if matches.is_empty(): continue
+		var definition: Dictionary = matches[0]
+		draw_circle(Vector2(-12*(elite_modifiers.size()-1)+i*24,-radius-43),8,Color(definition.color))

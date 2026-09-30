@@ -1,1 +1,1 @@
-extends "res://scripts/ui_v6.gd"
+extends "res://scripts/ui_v7.gd"

@@ -34,6 +34,7 @@ var status_proc_clock: float = 0
 var resonance_clock: float = 3
 var guardian_clock: float = 8
 var heal_clock: float = 0.0
+var slow_time: float = 0.0
 var safe_clock: float = 0.0
 var shield_ready: bool = false
 var revive_used: bool = false
@@ -80,6 +81,7 @@ func _physics_process(delta: float) -> void:
 	if game.state != "combat" or dead: return
 	attack_clock = maxf(0,attack_clock-delta)
 	status_proc_clock = maxf(0,status_proc_clock-delta)
+	slow_time = maxf(0,slow_time-delta)
 	skills.tick(delta)
 	tick_evolution(delta)
 	barrier_time = maxf(0,barrier_time-delta)
@@ -119,6 +121,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		var boost = 1.0 + (stats.bonus("kill_speed") if kill_buff > 0 else 0.0)
 		if stats.role==2 and skills.rapid_time>0: boost *= 1.2
+		if slow_time>0: boost *= 0.68
 		velocity = movement * stats.value("speed") * boost
 	move_and_slide()
 	visual.aim = aim
@@ -132,7 +135,8 @@ func _physics_process(delta: float) -> void:
 			orbit_tick = 0.25
 			for enemy in game.enemies.duplicate():
 				if is_instance_valid(enemy) and enemy.global_position.distance_to(global_position) < 150+stats.bonus("orbit")*25+(skills.rank(0)-1)*20:
-					enemy.hurt(stats.value("attack")*(0.45+0.04*(skills.rank(0)-1)),false,true)
+					var evolution_bonus = 0.12*skills.tier(0) if skills.branch(0)==0 else 0.0
+					enemy.hurt(stats.value("attack")*(0.45+0.04*(skills.rank(0)-1)+evolution_bonus),false,true)
 	queue_redraw()
 
 func dash(movement: Vector2) -> bool:
@@ -171,7 +175,7 @@ func attack() -> bool:
 	visual.play_gesture("attack",minf(.32,attack_clock))
 	var empowered = first_round or skills.empowered_shots>0
 	if skills.empowered_shots>0: skills.empowered_shots -= 1
-	var amount = stats.value("attack")
+	var amount = stats.value("attack")*skills.normal_multiplier()
 	if hp < stats.value("hp")*0.35: amount *= 1+stats.bonus("berserk")
 	if dash_attack:
 		amount *= 1+stats.bonus("dash_power")
@@ -186,14 +190,15 @@ func attack() -> bool:
 	var count = 1+int(stats.bonus("multishot"))
 	for i in range(count):
 		var dir = aim.rotated((i-(count-1)*0.5)*0.14)
-		game.spawn_projectile(global_position+dir*32,dir,{
+		var properties = {
 			"source":"normal","empowered":empowered,"damage":amount,"critical":critical,"style":stats.role,"tint":stats.base.color,
 			"speed":[920.0,1500.0,1120.0][stats.role]*(1+stats.bonus("projectile_pct")),
 			"remaining":stats.value("range"),
 			"pierce":(2+int(stats.bonus("pierce"))) if stats.role == 0 else 1,
 			"bounce":int(stats.bonus("bounce")) if stats.role == 2 else 0,
 			"can_return":stats.role == 0 and stats.bonus("return")>0
-		})
+		}
+		game.spawn_projectile(global_position+dir*32,dir,skills.decorate_normal(properties))
 	skills.on_attack()
 	game.presentation_fx.emit("shot",global_position+visual.muzzle_local(),aim,stats.role)
 	visual.action = 0.20
@@ -270,8 +275,9 @@ func _draw() -> void:
 	if orbit_time > 0:
 		var r = 150.0+stats.bonus("orbit")*25.0+(skills.rank(0)-1)*20
 		draw_arc(Vector2.ZERO,r,0,TAU,64,Color(0.4,0.9,0.85,0.18),2,true)
-		for i in range(5):
-			var angle = orbit_time*4+i*TAU/5
+		var sword_count = 5+(2+skills.tier(0) if skills.branch(0)==0 else 0)
+		for i in range(sword_count):
+			var angle = orbit_time*4+i*TAU/sword_count
 			var p = Vector2.from_angle(angle)*r
 			draw_line(p-Vector2.from_angle(angle+PI/2)*17,p+Vector2.from_angle(angle+PI/2)*17,Color("#c5fff0"),6,true)
 

@@ -111,7 +111,7 @@ func spawn_wave() -> void:
 		game.sound.play("boss")
 		return
 	var count = (5+mini(4,game.stage)) if r.kind=="battle" else 7
-	var pool: Array = [0,0,2] if game.stage==1 else ([0,0,1,2,3] if game.stage<5 else [0,1,2,3,9,10,11])
+	var pool: Array = [0,0,2] if game.stage==1 else ([0,1,2,3,15,16,17,18] if game.stage==2 else ([0,0,1,2,3,15,16,17,18] if game.stage<5 else [0,1,2,3,9,10,11,15,16,17,18]))
 	for i in range(count):
 		var kind: int = pool[(i+int(r.grid[0]))%pool.size()]
 		game.pending.append({"kind":kind,"elite":r.kind=="elite" and i==count-1})
@@ -210,7 +210,7 @@ func complete_room() -> void:
 		return
 	reward_layers = 3 if r.kind in ["elite","secret"] else 2
 	game.state = "reward"
-	game.rewards = game.player.stats.reward_choices(reward_rng,game.player.hp,true)
+	game.rewards = game.roll_rewards(reward_rng,true,r.kind in ["elite","secret"])
 	game.ui.show_rewards(game.rewards)
 	game.sound.play("reward")
 	game.profile.save_profile()
@@ -258,7 +258,7 @@ func choose_event(index: int) -> void:
 	event_options.clear()
 func snapshot() -> Dictionary:
 	var p = game.player
-	return {"version":1,"map":data.duplicate(true),"role":game.selected_role,"rng":str(game.rng.state),"reward_rng":str(reward_rng.state),"hp":p.hp,"bonuses":p.stats.bonuses.duplicate(true),"stacks":p.stats.stacks.duplicate(true),"revive_used":p.revive_used,"elapsed":game.elapsed,"kills":game.kills,"gold":game.earned_gold,"xp":game.earned_xp,"gear":game.earned_gear,"item_clocks":p.item_clocks.duplicate(),"cooldowns":p.skills.cooldowns.duplicate(),"temporary":p.skills.temporary.duplicate()}
+	return {"version":1,"map":data.duplicate(true),"role":game.selected_role,"rng":str(game.rng.state),"reward_rng":str(reward_rng.state),"hp":p.hp,"bonuses":p.stats.bonuses.duplicate(true),"stacks":p.stats.stacks.duplicate(true),"revive_used":p.revive_used,"elapsed":game.elapsed,"kills":game.kills,"gold":game.earned_gold,"xp":game.earned_xp,"gear":game.earned_gear,"item_clocks":p.item_clocks.duplicate(),"cooldowns":p.skills.cooldowns.duplicate(),"temporary":p.skills.temporary.duplicate(),"evolutions":p.skills.evolutions.duplicate(true),"rerolls":p.skills.rerolls,"reward_count":p.skills.reward_count}
 func save_exit() -> bool:
 	if not active or not current().cleared or game.state!="intermission": return false
 	var old: Dictionary = game.profile.data.exploration
@@ -287,6 +287,9 @@ func resume() -> bool:
 	p.revive_used = c.revive_used
 	p.skills.cooldowns.assign(c.cooldowns)
 	p.skills.temporary = c.temporary
+	p.skills.evolutions = c.get("evolutions",{}).duplicate(true)
+	p.skills.rerolls = int(c.get("rerolls",2))
+	p.skills.reward_count = int(c.get("reward_count",0))
 	p.item_clocks = c.item_clocks
 	game.elapsed = c.elapsed
 	game.kills = int(c.kills)

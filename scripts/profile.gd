@@ -10,7 +10,7 @@ var notice: String = ""
 var events: Array = []
 
 func fresh() -> void:
-	data = {"version":4,"gold":80,"material":3,"v3_grant":true,"favorites":{},"abyss_best":[0,0,0],"checkpoint":{},"next_id":1,"roles":[],"inventory":[],"overflow":[],"consumables":{"potion":3,"barrier":1},"quick":["potion","barrier","thunder"],"unlocked":1,"cleared":[],"found":{},"seen":{},"achievements":{},"claimed":{},"legend_misses":0,"exploration":{},"boss_misses":0,"secret":false}
+	data = {"version":5,"gold":80,"material":3,"v3_grant":true,"v7_migrated":true,"favorites":{},"abyss_best":[0,0,0],"checkpoint":{},"next_id":1,"roles":[],"inventory":[],"overflow":[],"consumables":{"potion":3,"barrier":1},"quick":["potion","barrier","thunder"],"unlocked":1,"cleared":[],"found":{},"seen":{},"achievements":{},"claimed":{},"legend_misses":0,"exploration":{},"boss_misses":0,"secret":false,"chapter_pity":{},"camp_dialogue":{}}
 	for role in range(3):
 		data.roles.append({"level":1,"xp":0,"talents":{},"skills":[1,1,1,1],"spent":0,"resets":0,"equipped":{}})
 		var rng = RandomNumberGenerator.new()
@@ -107,6 +107,11 @@ func load_profile() -> void:
 	if data.cleared.has(5): data.unlocked = 6
 	if not data.has("legend_misses"): data.legend_misses = 0
 	if not data.has("exploration"): data.exploration = {}
+	if not data.has("chapter_pity"): data.chapter_pity = {}
+	if not data.has("camp_dialogue"): data.camp_dialogue = {}
+	if not data.get("v7_migrated",false):
+		data.v7_migrated = true
+		notice = "第七版构筑系统已启用：旧角色、装备、天赋、货币和章节进度均已保留。"
 	if int(data.get("version",1))<4: notice = "第四版成长已补齐：每级 2 点，5–30 级每 5 级额外 2 点；原有投入保留。"
 	data.version = C.VERSION
 	dirty = true

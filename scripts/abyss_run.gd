@@ -27,7 +27,7 @@ func cleared() -> void:
 	if floor_id>=30: game.profile.unlock("abyss30")
 	game.profile.dirty = true
 	game.state = "reward"
-	game.rewards = game.player.stats.reward_choices(game.rng,game.player.hp,true)
+	game.rewards = game.roll_rewards(game.rng,true,game.flow.floor_number%5==0)
 	game.ui.show_rewards(game.rewards)
 func after_reward() -> void:
 	if game.flow.floor_number%5==0:

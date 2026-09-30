@@ -79,7 +79,9 @@ func _draw() -> void:
 	if hero:
 		region = P.ROLES[kind].back if aim.y<-.25 else P.ROLES[kind].front
 	else:
-		var index = clampi(enemy_id if enemy_id>=0 else kind-3,0,13)
+		var display_id = enemy_id if enemy_id>=0 else kind-3
+		if display_id>=15: display_id = [2,10,1,9][display_id-15]
+		var index = clampi(display_id,0,13)
 		region = P.ENEMY_REGIONS[P.ENEMY_LOOKS[index]]
 		height = 160 if index in [4,5,6,7,8,12,13] else 100
 		if enemy_id==14:

@@ -46,7 +46,8 @@ func _draw() -> void:
 		var code = {"start":"营","battle":"战","elite":"精","event":"宝" if r.event=="chest" else "奇","boss":"王","secret":"隐"}[r.kind]
 		if expanded:
 			draw_string(font,p+Vector2(-42,-8),game.rooms.Graph.NAMES[r.kind],HORIZONTAL_ALIGNMENT_LEFT,-1,21,color)
-			draw_string(font,p+Vector2(-40,22),"已完成" if r.visited and r.cleared else ("已探索" if r.visited else "未探索"),HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("#b1b9c6"))
+			draw_string(font,p+Vector2(-40,18),"危险 %d · %s"%[int(r.get("danger",1)),str(r.get("reward_hint","未知奖励"))],HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("#e1c684"))
+			draw_string(font,p+Vector2(-40,38),"已完成" if r.visited and r.cleared else ("已探索" if r.visited else str(r.get("enemy_hint","未知敌群"))),HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("#b1b9c6"))
 		elif id!=data.current: draw_string(font,p+Vector2(-7,6),code,HORIZONTAL_ALIGNMENT_LEFT,-1,14,color)
 func panel_style() -> StyleBoxFlat:
 	var style = StyleBoxFlat.new()

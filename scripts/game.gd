@@ -483,14 +483,16 @@ func stage_finished() -> void:
 		else: end_run(true)
 		return
 	state = "reward"
-	rewards = player.stats.reward_choices(rng,player.hp,wave>=max_waves())
+	rewards = roll_rewards(rng,wave>=max_waves(),false)
 	sound.play("reward")
 	ui.show_rewards(rewards)
 
 func choose_reward(index: int) -> void:
 	if state!="reward" or index<0 or index>=rewards.size(): return
 	var choice: Array = rewards[index]
-	if choice[3]=="gold":
+	if choice[3]=="evolution":
+		if not player.skills.apply_evolution(choice[0]): return
+	elif choice[3]=="gold":
 		profile.data.gold += int(choice[4])
 		profile.dirty = true
 	else:
@@ -521,6 +523,19 @@ func choose_reward(index: int) -> void:
 		progress_delay = 0.65
 		begin_wave()
 	profile.save_profile()
+
+func roll_rewards(source_rng: RandomNumberGenerator, round_end: bool = false, force_evolution: bool = false) -> Array:
+	var base = player.stats.reward_choices(source_rng,player.hp,round_end)
+	return player.skills.enhance_rewards(base,source_rng,force_evolution)
+
+func reroll_rewards() -> void:
+	if state!="reward" or not is_instance_valid(player) or player.skills.rerolls<=0: return
+	player.skills.rerolls -= 1
+	var source_rng: RandomNumberGenerator = rooms.reward_rng if rooms.active else rng
+	var force = rooms.active and rooms.current().kind in ["elite","secret"]
+	rewards = roll_rewards(source_rng,true,force)
+	ui.show_rewards(rewards)
+	sound.play("ui_confirm")
 
 func end_run(victory: bool) -> void:
 	if state!="combat": return
