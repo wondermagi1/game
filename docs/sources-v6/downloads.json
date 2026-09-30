@@ -1,0 +1,437 @@
+[
+  {
+    "path": "art/v6/fx/smoke_01.png",
+    "original": "work\\v6-sources\\particle-pack\\PNG (Transparent)\\smoke_01.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/smoke_02.png",
+    "original": "work\\v6-sources\\particle-pack\\PNG (Transparent)\\smoke_02.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/smoke_03.png",
+    "original": "work\\v6-sources\\particle-pack\\PNG (Transparent)\\smoke_03.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/flame_01.png",
+    "original": "work\\v6-sources\\particle-pack\\PNG (Transparent)\\flame_01.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/flame_02.png",
+    "original": "work\\v6-sources\\particle-pack\\PNG (Transparent)\\flame_02.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/flame_03.png",
+    "original": "work\\v6-sources\\particle-pack\\PNG (Transparent)\\flame_03.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/fire_01.png",
+    "original": "work\\v6-sources\\particle-pack\\PNG (Transparent)\\fire_01.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/light_01.png",
+    "original": "work\\v6-sources\\particle-pack\\PNG (Transparent)\\light_01.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/magic_01.png",
+    "original": "work\\v6-sources\\particle-pack\\PNG (Transparent)\\magic_01.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/circle_05.png",
+    "original": "work\\v6-sources\\particle-pack\\PNG (Transparent)\\circle_05.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/explosion00.png",
+    "original": "work\\v6-sources\\smoke-particles\\PNG\\Explosion\\explosion00.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/smoke-particles",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/explosion01.png",
+    "original": "work\\v6-sources\\smoke-particles\\PNG\\Explosion\\explosion01.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/smoke-particles",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/explosion02.png",
+    "original": "work\\v6-sources\\smoke-particles\\PNG\\Explosion\\explosion02.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/smoke-particles",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/explosion03.png",
+    "original": "work\\v6-sources\\smoke-particles\\PNG\\Explosion\\explosion03.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/smoke-particles",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/explosion04.png",
+    "original": "work\\v6-sources\\smoke-particles\\PNG\\Explosion\\explosion04.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/smoke-particles",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/explosion05.png",
+    "original": "work\\v6-sources\\smoke-particles\\PNG\\Explosion\\explosion05.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/smoke-particles",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/explosion06.png",
+    "original": "work\\v6-sources\\smoke-particles\\PNG\\Explosion\\explosion06.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/smoke-particles",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/explosion07.png",
+    "original": "work\\v6-sources\\smoke-particles\\PNG\\Explosion\\explosion07.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/smoke-particles",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/fx/explosion08.png",
+    "original": "work\\v6-sources\\smoke-particles\\PNG\\Explosion\\explosion08.png",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/smoke-particles",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "art/v6/lulu-original.webp",
+    "original": "work\\v6-sources\\lulu\\spritesheet.webp",
+    "author": "czy666chen",
+    "url": "https://github.com/czy666chen/lulu",
+    "license": "MIT",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "docs/sources-v6/Lulu-MIT.txt",
+    "original": "work\\v6-sources\\lulu\\LICENSE",
+    "author": "czy666chen",
+    "url": "https://github.com/czy666chen/lulu/blob/main/LICENSE",
+    "license": "MIT",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "docs/sources-v6/particle-pack-CC0.txt",
+    "original": "work\\v6-sources\\particle-pack\\License.txt",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/particle-pack",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "docs/sources-v6/smoke-particles-CC0.txt",
+    "original": "work\\v6-sources\\smoke-particles\\license.txt",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/smoke-particles",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "docs/sources-v6/impact-sounds-CC0.txt",
+    "original": "work\\v6-sources\\impact-sounds\\License.txt",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "docs/sources-v6/sci-fi-sounds-CC0.txt",
+    "original": "work\\v6-sources\\sci-fi-sounds\\License.txt",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/sci-fi-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/impactMetal_light_000.ogg",
+    "original": "work\\v6-sources\\impact-sounds\\Audio\\impactMetal_light_000.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/impactMetal_light_001.ogg",
+    "original": "work\\v6-sources\\impact-sounds\\Audio\\impactMetal_light_001.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/impactMetal_light_002.ogg",
+    "original": "work\\v6-sources\\impact-sounds\\Audio\\impactMetal_light_002.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/impactMetal_heavy_000.ogg",
+    "original": "work\\v6-sources\\impact-sounds\\Audio\\impactMetal_heavy_000.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/impactMetal_heavy_001.ogg",
+    "original": "work\\v6-sources\\impact-sounds\\Audio\\impactMetal_heavy_001.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/impactMetal_heavy_002.ogg",
+    "original": "work\\v6-sources\\impact-sounds\\Audio\\impactMetal_heavy_002.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/impactWood_medium_000.ogg",
+    "original": "work\\v6-sources\\impact-sounds\\Audio\\impactWood_medium_000.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/impactWood_medium_001.ogg",
+    "original": "work\\v6-sources\\impact-sounds\\Audio\\impactWood_medium_001.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/impactWood_medium_002.ogg",
+    "original": "work\\v6-sources\\impact-sounds\\Audio\\impactWood_medium_002.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/impact-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/explosionCrunch_000.ogg",
+    "original": "work\\v6-sources\\sci-fi-sounds\\Audio\\explosionCrunch_000.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/sci-fi-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/explosionCrunch_001.ogg",
+    "original": "work\\v6-sources\\sci-fi-sounds\\Audio\\explosionCrunch_001.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/sci-fi-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/explosionCrunch_002.ogg",
+    "original": "work\\v6-sources\\sci-fi-sounds\\Audio\\explosionCrunch_002.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/sci-fi-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/thrusterFire_000.ogg",
+    "original": "work\\v6-sources\\sci-fi-sounds\\Audio\\thrusterFire_000.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/sci-fi-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/thrusterFire_001.ogg",
+    "original": "work\\v6-sources\\sci-fi-sounds\\Audio\\thrusterFire_001.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/sci-fi-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/thrusterFire_002.ogg",
+    "original": "work\\v6-sources\\sci-fi-sounds\\Audio\\thrusterFire_002.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/sci-fi-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/lowFrequency_explosion_000.ogg",
+    "original": "work\\v6-sources\\sci-fi-sounds\\Audio\\lowFrequency_explosion_000.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/sci-fi-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/slime_000.ogg",
+    "original": "work\\v6-sources\\sci-fi-sounds\\Audio\\slime_000.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/sci-fi-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio/v6/slime_001.ogg",
+    "original": "work\\v6-sources\\sci-fi-sounds\\Audio\\slime_001.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/sci-fi-sounds",
+    "license": "CC0",
+    "processing": "Original pixels/audio; runtime scale, tint, crop or playback mix only"
+  },
+  {
+    "path": "audio\\v6\\drawKnife1.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\drawKnife2.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\drawKnife3.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\knifeSlice.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\knifeSlice2.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\creak1.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\creak2.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\creak3.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\metalClick.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\metalLatch.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\cloth1.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\cloth2.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  },
+  {
+    "path": "audio\\v6\\cloth3.ogg",
+    "author": "Kenney",
+    "url": "https://kenney.nl/assets/rpg-audio",
+    "license": "CC0",
+    "processing": "Original OGG, runtime layered playback"
+  }
+]

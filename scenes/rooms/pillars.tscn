@@ -1,0 +1,51 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_template.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="shape0"]
+size = Vector2(110, 110)
+
+[sub_resource type="RectangleShape2D" id="shape1"]
+size = Vector2(110, 110)
+
+[sub_resource type="RectangleShape2D" id="shape2"]
+size = Vector2(110, 110)
+
+[sub_resource type="RectangleShape2D" id="shape3"]
+size = Vector2(110, 110)
+
+[node name="pillars" type="Node2D"]
+script = ExtResource("1")
+layout_name = "柱阵回廊"
+
+[node name="Cover0" type="StaticBody2D" parent="."]
+position = Vector2(600, 360)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape2D" parent="Cover0"]
+shape = SubResource("shape0")
+
+[node name="Cover1" type="StaticBody2D" parent="."]
+position = Vector2(1260, 360)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape2D" parent="Cover1"]
+shape = SubResource("shape1")
+
+[node name="Cover2" type="StaticBody2D" parent="."]
+position = Vector2(600, 730)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape2D" parent="Cover2"]
+shape = SubResource("shape2")
+
+[node name="Cover3" type="StaticBody2D" parent="."]
+position = Vector2(1260, 730)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape2D" parent="Cover3"]
+shape = SubResource("shape3")

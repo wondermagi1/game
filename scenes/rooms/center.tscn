@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_template.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="shape0"]
+size = Vector2(330, 190)
+
+[node name="center" type="Node2D"]
+script = ExtResource("1")
+layout_name = "中央遗迹"
+
+[node name="Cover0" type="StaticBody2D" parent="."]
+position = Vector2(960, 555)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape2D" parent="Cover0"]
+shape = SubResource("shape0")

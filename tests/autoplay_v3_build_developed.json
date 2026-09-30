@@ -1,0 +1,31 @@
+[
+  {
+    "boss_seconds": 43.3,
+    "build": "developed",
+    "chapter": 6,
+    "damage_taken": 207.8,
+    "final_level": 47,
+    "fixture_enhance": 10,
+    "fixture_level": 45,
+    "fixture_quality": "legendary",
+    "fixture_set_pieces": 6,
+    "fixture_skill_ranks": [
+      8,
+      3,
+      3,
+      2
+    ],
+    "fixture_talent_points": 44,
+    "health": 337.944200237682,
+    "kills": 350,
+    "projectile_peak": 27,
+    "role": 0,
+    "round": 7,
+    "seconds": 398.0,
+    "seed": 81860,
+    "starting_attack": 100.8,
+    "starting_hp": 484.3,
+    "timeout": false,
+    "won": true
+  }
+]

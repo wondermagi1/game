@@ -1,0 +1,52 @@
+{
+  "date": "2026-09-21",
+  "engine": "4.7.2.stable.official.ed1daf0bf",
+  "regression": {
+    "failed": 0,
+    "failures": [],
+    "passed": 714
+  },
+  "autoplay": [
+    {
+      "health": 0.0,
+      "kills": 163,
+      "projectile_peak": 14,
+      "role": 0,
+      "seconds": 246.3,
+      "stage": 5,
+      "timeout": false,
+      "won": false
+    },
+    {
+      "health": 5.66666666666666,
+      "kills": 160,
+      "projectile_peak": 16,
+      "role": 1,
+      "seconds": 225.3,
+      "stage": 5,
+      "timeout": false,
+      "won": true
+    },
+    {
+      "health": 0.0,
+      "kills": 158,
+      "projectile_peak": 14,
+      "role": 2,
+      "seconds": 219.1,
+      "stage": 5,
+      "timeout": false,
+      "won": false
+    }
+  ],
+  "stress": {
+    "enemies": 36,
+    "logical_viewport": "1920x1080",
+    "mean_fps": 163.9,
+    "mean_frame_ms": 6.1,
+    "p95_frame_ms": 7.67,
+    "projectile_peak": 450,
+    "renderer": "GL Compatibility",
+    "samples": 300,
+    "window": "1280x720"
+  }
+}

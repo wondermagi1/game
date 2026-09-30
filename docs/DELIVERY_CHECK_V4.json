@@ -1,0 +1,17 @@
+{
+  "version": "0.4.0",
+  "assertions": 26201,
+  "main_runs": 18,
+  "main_wins": 18,
+  "additional_build_runs": 6,
+  "abyss_completed": [
+    30,
+    30,
+    30
+  ],
+  "render_samples": 9,
+  "min_stress_fps": 56.8273193928342,
+  "max_stress_fps": 93.1651846673708,
+  "package_verified": true,
+  "fresh_package_checks": 806
+}

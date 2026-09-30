@@ -1,0 +1,42 @@
+{
+  "checks": 25395,
+  "drop_samples": [
+    {
+      "drops": 694,
+      "own_role": 614,
+      "quality": [
+        58,
+        273,
+        289,
+        74
+      ],
+      "rolls": 10000,
+      "tier": 0
+    },
+    {
+      "drops": 4054,
+      "own_role": 3651,
+      "quality": [
+        0,
+        1000,
+        2027,
+        1027
+      ],
+      "rolls": 10000,
+      "tier": 1
+    },
+    {
+      "drops": 10000,
+      "own_role": 10000,
+      "quality": [
+        0,
+        0,
+        5422,
+        4578
+      ],
+      "rolls": 10000,
+      "tier": 2
+    }
+  ],
+  "failures": []
+}

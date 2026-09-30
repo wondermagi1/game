@@ -1,0 +1,68 @@
+{
+  "build_damage_benchmark": [
+    {
+      "build": "untrained",
+      "damage_10s": 2057.3
+    },
+    {
+      "build": "recommended",
+      "damage_10s": 2382.1
+    },
+    {
+      "build": "developed",
+      "damage_10s": 3319.5
+    }
+  ],
+  "drop_samples": [
+    {
+      "drops": 126,
+      "qualities": [
+        85,
+        33,
+        7,
+        1
+      ],
+      "rate": 0.0126,
+      "samples": 10000,
+      "tier": 0
+    },
+    {
+      "drops": 801,
+      "qualities": [
+        322,
+        321,
+        136,
+        22
+      ],
+      "rate": 0.0801,
+      "samples": 10000,
+      "tier": 1
+    },
+    {
+      "drops": 5469,
+      "qualities": [
+        519,
+        2174,
+        2218,
+        558
+      ],
+      "rate": 0.5469,
+      "samples": 10000,
+      "tier": 2
+    },
+    {
+      "drops": 10000,
+      "qualities": [
+        0,
+        0,
+        6114,
+        3886
+      ],
+      "rate": 1.0,
+      "samples": 10000,
+      "tier": 3
+    }
+  ],
+  "failures": [],
+  "passed": 467
+}

@@ -1,0 +1,182 @@
+{
+  "checks": 21,
+  "checks_detail": [
+    "physical Z event consumes potion exactly once",
+    "capturing X changes key without consuming or attacking",
+    "checkpoint written to real isolated file",
+    "checkpoint survives JSON load and resume",
+    "real disk resume preserves currency and sold stock",
+    "real disk resume restores temporary progression and cooldowns",
+    "64 bit RNG state roundtrips losslessly",
+    "consumed checkpoint remains consumed on fresh load",
+    "resume advances next floor without renewing abyss revive",
+    "full build fixed target damage role 0 low",
+    "full build fixed target damage role 0 recommended",
+    "full build fixed target damage role 0 developed",
+    "full build fixed target damage role 1 low",
+    "full build fixed target damage role 1 recommended",
+    "full build fixed target damage role 1 developed",
+    "full build fixed target damage role 2 low",
+    "full build fixed target damage role 2 recommended",
+    "full build fixed target damage role 2 developed",
+    "gear and talent investment increases actual output role 0",
+    "gear and talent investment increases actual output role 1",
+    "gear and talent investment increases actual output role 2"
+  ],
+  "failures": [],
+  "target_damage": [
+    {
+      "build": "low",
+      "combo_count": 2,
+      "damage_10s": 2442.1,
+      "fixture_enhance": 3,
+      "fixture_level": 20,
+      "fixture_quality": "rare",
+      "fixture_set_pieces": 4,
+      "fixture_skill_ranks": [
+        3,
+        2,
+        2,
+        2
+      ],
+      "fixture_talent_points": 19,
+      "role": 0
+    },
+    {
+      "build": "recommended",
+      "combo_count": 2,
+      "damage_10s": 4168.0,
+      "fixture_enhance": 7,
+      "fixture_level": 30,
+      "fixture_quality": "epic",
+      "fixture_set_pieces": 6,
+      "fixture_skill_ranks": [
+        5,
+        2,
+        2,
+        2
+      ],
+      "fixture_talent_points": 29,
+      "role": 0
+    },
+    {
+      "build": "developed",
+      "combo_count": 3,
+      "damage_10s": 5701.7,
+      "fixture_enhance": 10,
+      "fixture_level": 45,
+      "fixture_quality": "legendary",
+      "fixture_set_pieces": 6,
+      "fixture_skill_ranks": [
+        8,
+        3,
+        3,
+        2
+      ],
+      "fixture_talent_points": 44,
+      "role": 0
+    },
+    {
+      "build": "low",
+      "combo_count": 1,
+      "damage_10s": 2723.9,
+      "fixture_enhance": 3,
+      "fixture_level": 20,
+      "fixture_quality": "rare",
+      "fixture_set_pieces": 4,
+      "fixture_skill_ranks": [
+        3,
+        2,
+        2,
+        2
+      ],
+      "fixture_talent_points": 19,
+      "role": 1
+    },
+    {
+      "build": "recommended",
+      "combo_count": 1,
+      "damage_10s": 4123.2,
+      "fixture_enhance": 7,
+      "fixture_level": 30,
+      "fixture_quality": "epic",
+      "fixture_set_pieces": 6,
+      "fixture_skill_ranks": [
+        5,
+        2,
+        2,
+        2
+      ],
+      "fixture_talent_points": 29,
+      "role": 1
+    },
+    {
+      "build": "developed",
+      "combo_count": 3,
+      "damage_10s": 6069.7,
+      "fixture_enhance": 10,
+      "fixture_level": 45,
+      "fixture_quality": "legendary",
+      "fixture_set_pieces": 6,
+      "fixture_skill_ranks": [
+        8,
+        3,
+        3,
+        2
+      ],
+      "fixture_talent_points": 44,
+      "role": 1
+    },
+    {
+      "build": "low",
+      "combo_count": 4,
+      "damage_10s": 3279.6,
+      "fixture_enhance": 3,
+      "fixture_level": 20,
+      "fixture_quality": "rare",
+      "fixture_set_pieces": 4,
+      "fixture_skill_ranks": [
+        3,
+        2,
+        2,
+        2
+      ],
+      "fixture_talent_points": 19,
+      "role": 2
+    },
+    {
+      "build": "recommended",
+      "combo_count": 4,
+      "damage_10s": 4632.0,
+      "fixture_enhance": 7,
+      "fixture_level": 30,
+      "fixture_quality": "epic",
+      "fixture_set_pieces": 6,
+      "fixture_skill_ranks": [
+        5,
+        2,
+        2,
+        2
+      ],
+      "fixture_talent_points": 29,
+      "role": 2
+    },
+    {
+      "build": "developed",
+      "combo_count": 5,
+      "damage_10s": 6064.4,
+      "fixture_enhance": 10,
+      "fixture_level": 45,
+      "fixture_quality": "legendary",
+      "fixture_set_pieces": 6,
+      "fixture_skill_ranks": [
+        8,
+        3,
+        3,
+        2
+      ],
+      "fixture_talent_points": 44,
+      "role": 2
+    }
+  ]
+}

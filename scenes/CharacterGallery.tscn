@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/CharacterVisual.tscn" id="1"]
+
+[node name="CharacterGallery" type="Node2D"]
+
+[node name="Sword" parent="." instance=ExtResource("1")]
+position = Vector2(430,600)
+scale = Vector2(4,4)
+kind = 0
+
+[node name="Gunner" parent="." instance=ExtResource("1")]
+position = Vector2(960,600)
+scale = Vector2(4,4)
+kind = 1
+
+[node name="Archer" parent="." instance=ExtResource("1")]
+position = Vector2(1490,600)
+scale = Vector2(4,4)
+kind = 2

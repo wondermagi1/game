@@ -1,0 +1,38 @@
+[
+  {
+    "gear": 3,
+    "gold": 694,
+    "hp": 117.266666666667,
+    "kills": 1,
+    "level": 1,
+    "role": 0,
+    "seconds": 19.0,
+    "taken": 8.33333333333333,
+    "won": true,
+    "xp": 1080
+  },
+  {
+    "gear": 3,
+    "gold": 694,
+    "hp": 114.4,
+    "kills": 1,
+    "level": 1,
+    "role": 1,
+    "seconds": 13.4,
+    "taken": 0.0,
+    "won": true,
+    "xp": 1080
+  },
+  {
+    "gear": 2,
+    "gold": 694,
+    "hp": 103.2,
+    "kills": 1,
+    "level": 1,
+    "role": 2,
+    "seconds": 12.7,
+    "taken": 0.0,
+    "won": true,
+    "xp": 1080
+  }
+]

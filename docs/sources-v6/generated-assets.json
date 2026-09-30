@@ -1,0 +1,66 @@
+[
+  {
+    "path": "art/v6/sword-parts.png",
+    "original_generated_filename": "exec-3778cadb-da79-4e31-98a5-203deaf8623d.png",
+    "tool": "Built-in imagegen",
+    "batch": "01a0beeb-dd07-7470-9ae8-1a3640283063",
+    "pixels": "Unmodified original RGBA",
+    "usage": "Prototype"
+  },
+  {
+    "path": "art/v6/gunner-parts.png",
+    "original_generated_filename": "exec-445823e9-9e4a-442f-99c6-eaadc3a7c3d4.png",
+    "tool": "Built-in imagegen",
+    "batch": "01a0beeb-dd07-7470-9ae8-1a3640283063",
+    "pixels": "Unmodified original RGBA",
+    "usage": "Prototype"
+  },
+  {
+    "path": "art/v6/ranger-parts.png",
+    "original_generated_filename": "exec-846e680f-edb2-4084-bda9-df4fed4338b5.png",
+    "tool": "Built-in imagegen",
+    "batch": "01a0beeb-dd07-7470-9ae8-1a3640283063",
+    "pixels": "Unmodified original RGBA",
+    "usage": "Prototype"
+  },
+  {
+    "path": "art/v6/weapons.png",
+    "original_generated_filename": "exec-a85267a2-0a6f-488e-85f5-bfb989b3f790.png",
+    "tool": "Built-in imagegen",
+    "batch": "01a0beeb-dd07-7470-9ae8-1a3640283063",
+    "pixels": "Unmodified original RGBA",
+    "usage": "Runtime"
+  },
+  {
+    "path": "art/v6/sword-integrated.png",
+    "original_generated_filename": "exec-96395ecb-e6eb-4713-bf5e-dde26cdb4912.png",
+    "tool": "Built-in imagegen",
+    "batch": "01a0beeb-dd07-7470-9ae8-1a3640283063",
+    "pixels": "Unmodified original RGBA",
+    "usage": "Runtime"
+  },
+  {
+    "path": "art/v6/gunner-integrated.png",
+    "original_generated_filename": "exec-c018d15f-74e1-4da2-9fbf-0a689589730d.png",
+    "tool": "Built-in imagegen",
+    "batch": "01a0beeb-dd07-7470-9ae8-1a3640283063",
+    "pixels": "Unmodified original RGBA",
+    "usage": "Runtime"
+  },
+  {
+    "path": "art/v6/ranger-integrated.png",
+    "original_generated_filename": "exec-2e4934c1-558d-4f25-b592-3237690ab45f.png",
+    "tool": "Built-in imagegen",
+    "batch": "01a0beeb-dd07-7470-9ae8-1a3640283063",
+    "pixels": "Unmodified original RGBA",
+    "usage": "Runtime"
+  },
+  {
+    "path": "art/v6/lulu-battle.png",
+    "original_generated_filename": "exec-d8d10c85-dc76-425a-8ea8-a48b395c9ca3.png",
+    "tool": "Built-in imagegen",
+    "batch": "01a0beeb-dd07-7470-9ae8-1a3640283063",
+    "pixels": "Unmodified original RGBA",
+    "usage": "Runtime"
+  }
+]

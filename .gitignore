@@ -1,0 +1,12 @@
+.godot/
+*.tmp
+*.bak
+*.log
+.DS_Store
+Thumbs.db
+
+# Local exports and captures generated beside the project.
+/*.avi
+/*.mp4
+/*.zip
+/*.zip.sha256

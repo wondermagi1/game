@@ -1,0 +1,13 @@
+{
+  "video": "v6-showcase.avi",
+  "frames": 2280,
+  "fps": 60,
+  "seconds": 38.0,
+  "width": 1280,
+  "height": 720,
+  "audio_stream_present": true,
+  "movie_mode": true,
+  "scripted_inputs": true,
+  "normal_level_one_combat": false,
+  "bytes": 253658942
+}

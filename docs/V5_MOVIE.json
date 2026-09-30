@@ -1,0 +1,11 @@
+{
+  "file": "v5-showcase.avi",
+  "bytes": 223795050,
+  "frames": 2280,
+  "width": 1280,
+  "height": 720,
+  "main_header_stream_count": 1,
+  "video_and_audio_streams_present": true,
+  "seconds": 38.0,
+  "indexed": true
+}

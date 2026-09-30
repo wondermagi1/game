@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/room_template.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="shape0"]
+size = Vector2(110, 110)
+
+[sub_resource type="RectangleShape2D" id="shape1"]
+size = Vector2(110, 110)
+
+[node name="boss" type="Node2D"]
+script = ExtResource("1")
+layout_name = "王座大殿"
+
+[node name="Cover0" type="StaticBody2D" parent="."]
+position = Vector2(470, 360)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape2D" parent="Cover0"]
+shape = SubResource("shape0")
+
+[node name="Cover1" type="StaticBody2D" parent="."]
+position = Vector2(1450, 760)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Shape" type="CollisionShape2D" parent="Cover1"]
+shape = SubResource("shape1")

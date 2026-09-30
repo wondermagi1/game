@@ -1,0 +1,60 @@
+{
+  "checks": 36,
+  "failures": [],
+  "skills": [
+    {
+      "attack": 42.85,
+      "base_sword_budget_factor": 33.2,
+      "combos": 2,
+      "damage": 1863.97499999404,
+      "moving": false,
+      "rank": 10,
+      "role": 0
+    },
+    {
+      "attack": 42.85,
+      "base_sword_budget_factor": 33.2,
+      "combos": 2,
+      "damage": 1778.27500000596,
+      "moving": true,
+      "rank": 10,
+      "role": 0
+    },
+    {
+      "attack": 52.85,
+      "base_sword_budget_factor": 0,
+      "combos": 0,
+      "damage": 3097.00999969244,
+      "moving": false,
+      "rank": 10,
+      "role": 1
+    },
+    {
+      "attack": 52.85,
+      "base_sword_budget_factor": 0,
+      "combos": 0,
+      "damage": 2938.45999971032,
+      "moving": true,
+      "rank": 10,
+      "role": 1
+    },
+    {
+      "attack": 60.85,
+      "base_sword_budget_factor": 0,
+      "combos": 4,
+      "damage": 4255.69687490165,
+      "moving": false,
+      "rank": 10,
+      "role": 2
+    },
+    {
+      "attack": 60.85,
+      "base_sword_budget_factor": 0,
+      "combos": 3,
+      "damage": 3054.66999991238,
+      "moving": true,
+      "rank": 10,
+      "role": 2
+    }
+  ]
+}
