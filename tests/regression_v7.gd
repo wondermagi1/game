@@ -28,6 +28,7 @@ func run() -> void:
 				check(entry.size()==5 and entry[4].size()==3,"role %d skill %d branch %d has three tiers"%[role,slot,branch])
 	check(V7.ELITE_MODIFIERS.size()==6,"six elite modifiers")
 	check(V7.ROOM_OBJECTIVES.size()==3,"three room objectives")
+	check(V7.GEAR_MECHANICS.size()==3 and V7.GEAR_MECHANICS.all(func(role): return role.size()==3),"nine build-linked equipment mechanics")
 	for tier in range(1,4):
 		var parsed = V7.parse_id(V7.evolution_id(2,3,1,tier))
 		check(parsed.role==2 and parsed.slot==3 and parsed.branch==1 and parsed.tier==tier,"evolution ids round trip tier %d"%tier)
@@ -49,6 +50,16 @@ func run() -> void:
 	check(int(game.profile.data.version)>=5,"profile migrated to version 5")
 	check(game.profile.data.has("v7_migrated") and game.profile.data.has("chapter_pity") and game.profile.data.has("camp_dialogue"),"v7 profile fields are additive")
 	check(C.ENEMIES.size()>=19,"catalog exposes four new normal enemies")
+	game.profile.data.roles[0].level = 30
+	var epic = game.profile.make_item(0,2,2,10,game.rng)
+	epic.mechanic = V7.gear_mechanic(0,1).id
+	epic.build_branch = 1
+	check(game.profile.receive_item(epic) and game.profile.equip(0,epic.uid)=="已装备","epic mechanic item can be received and equipped")
+	check(game.profile.permanent_bonuses(0).get("gear_branch_1",0)>=1,"equipped mechanic exposes its build hook")
+	game.profile.data.chapter_pity["0_2"] = 7
+	var pity_drop = game.profile.roll_equipment(0,0,2,game.rng)
+	check(not pity_drop.is_empty() and pity_drop.quality>=1 and pity_drop.drop_source=="章节保底","chapter pity guarantees a rare targeted drop")
+	check(pity_drop.slot==(2+0)%6 and int(game.profile.data.chapter_pity["0_2"])==0,"pity drop uses deterministic chapter slot and resets counter")
 
 	game.profile.data.unlocked = 6
 	game.profile.data.roles[0].level = 30

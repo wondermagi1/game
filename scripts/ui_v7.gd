@@ -66,6 +66,16 @@ func show_characters() -> void:
 	if is_instance_valid(game.player) and view_role==game.selected_role:
 		button(overlay,"本局流派构筑",Rect2(1470,294,320,54),show_build_panel,Color("#85cfc2"))
 
+func render_item_detail() -> void:
+	super.render_item_detail()
+	var item: Dictionary = game.profile.item_by_id(selected_uid)
+	if item.is_empty() or not item.has("mechanic"): return
+	var mechanic = V7.gear_mechanic(int(item.role),int(item.get("build_branch",int(item.slot)%3)))
+	for child in inventory_detail.get_children():
+		if child is Label and child.position.y==297:
+			child.text = "构筑机制 · %s\n%s\n标签：%s"%[mechanic.name,mechanic.text," / ".join(V7.BUILD_TAGS[int(item.role)][int(item.get("build_branch",0))])]
+			child.add_theme_font_size_override("font_size",17)
+
 func show_pause(stats_view: bool = false) -> void:
 	super.show_pause(stats_view)
 	button(overlay,"本局流派与进化",Rect2(560,865,800,65),show_build_panel,Color("#85cfc2"))

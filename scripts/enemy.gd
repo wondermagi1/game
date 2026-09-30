@@ -40,6 +40,7 @@ var modifier_clock: float = 0.0
 var drain_clock: float = 0.0
 var hunt_stacks: int = 0
 var summoned_copy: bool = false
+var last_source: String = ""
 
 func is_boss() -> bool:
 	return kind in [4,5,6,7,8,12,13,14]
@@ -342,6 +343,7 @@ func hurt(raw: float, critical: bool = false, apply_status: bool = true, source:
 	ward -= absorbed
 	amount -= absorbed
 	hp -= amount
+	last_source = "status" if not apply_status else source
 	game.dealt += minf(amount,maxf(0,hp+amount))
 	game.telemetry.record_damage(minf(amount,maxf(0,hp+amount)),"status" if not apply_status else source,critical)
 	game.fx.number(global_position,amount,Color("#ffe0a4") if critical else Color("#e7f1fa"),critical)
@@ -367,7 +369,7 @@ func die() -> void:
 	collision_layer = 0
 	game.kills += 1
 	game.enemy_defeated(self)
-	game.player.on_kill()
+	game.player.on_kill(self)
 	game.fx.burst(global_position,visual.tint,18 if is_boss() else 8)
 	game.sound.play("hit")
 	if elite_modifiers.has("volatile"):

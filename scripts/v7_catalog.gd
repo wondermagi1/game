@@ -72,6 +72,29 @@ const ROOM_OBJECTIVES = [
 	{"id":"seal","name":"三阵封印","text":"依次激活并守住三处阵眼。","reward":"高阶技能进化权重"}
 ]
 
+# Epic and legendary equipment receives one behavior hook. The branch index is
+# shared with BUILD_NAMES/BUILD_TAGS so equipment can support a chosen route.
+const GEAR_MECHANICS = [
+	[
+		{"id":"sword_guard","name":"归阵护锋","text":"剑阵飞剑数量增加；收阵时获得短暂护盾。"},
+		{"id":"sword_scar","name":"断岳剑痕","text":"巨剑体积与伤害提高，命中会留下更强冲击。"},
+		{"id":"sword_return","name":"双生回锋","text":"回锋弹体获得额外穿透和一次弹射。"}
+	],
+	[
+		{"id":"gun_heat","name":"赤烬散热器","text":"提高过热阈值，并强化高热状态伤害。"},
+		{"id":"gun_reload","name":"爆破解闩","text":"爆炸技能范围扩大；爆炸击杀可返还弹药。"},
+		{"id":"gun_mark","name":"猎魔准镜","text":"弱点路线提高暴击，完整标记更易处决。"}
+	],
+	[
+		{"id":"bow_storm","name":"逐风箭羽","text":"风暴区域持续次数增加，并扩大移动控场。"},
+		{"id":"bow_giant","name":"破界弓臂","text":"巨箭更宽更长，并提高完美蓄力伤害。"},
+		{"id":"bow_trap","name":"星罗机括","text":"陷阱额外触发一次，并让箭矢增加弹射。"}
+	]
+]
+
+static func gear_mechanic(role: int, branch_index: int) -> Dictionary:
+	return GEAR_MECHANICS[clampi(role,0,2)][clampi(branch_index,0,2)]
+
 static func branch(role: int, slot: int, branch_index: int) -> Array:
 	for entry in BRANCHES:
 		if int(entry[0])==role and int(entry[1])==slot and int(entry[2])==branch_index: return entry

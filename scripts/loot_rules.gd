@@ -7,7 +7,14 @@ static func weights(tier: int, chapter: int) -> Array:
 	if chapter>=3: return [[35.0,45.0,18.0,2.0],[10.0,45.0,38.0,7.0],[0.0,20.0,65.0,15.0]][tier]
 	return [[60.0,34.0,5.0,1.0],[20.0,60.0,18.0,2.0],[0.0,65.0,30.0,5.0]][tier]
 static func roll(profile, tier: int, role: int, chapter: int, rng: RandomNumberGenerator) -> Dictionary:
-	if rng.randf()>=C.DROP_CHANCE[tier]: return {}
+	var pity_key = "%d_%d"%[role,chapter]
+	var pity = int(profile.data.chapter_pity.get(pity_key,0))
+	var forced = pity>=7 and tier<2
+	if not forced and rng.randf()>=C.DROP_CHANCE[tier]:
+		if tier<2:
+			profile.data.chapter_pity[pity_key] = pity+1
+			profile.dirty = true
+		return {}
 	var roll_value = rng.randf()*100
 	var quality = 3
 	var chances = weights(tier,chapter)
@@ -16,10 +23,16 @@ static func roll(profile, tier: int, role: int, chapter: int, rng: RandomNumberG
 		if roll_value<=0:
 			quality = i
 			break
+	if forced: quality = maxi(1,quality)
 	if tier==2 and chapter>=5:
 		if int(profile.data.legend_misses)>=3: quality = 3
 		profile.data.legend_misses = 0 if quality==3 else int(profile.data.legend_misses)+1
 		profile.dirty = true
 	var owner = role if tier>=2 or rng.randf()<0.90 else (role+rng.randi_range(1,2))%3
 	var level = mini(int(profile.data.roles[owner].level),int(C.CHAPTERS[chapter-1].level))
-	return profile.make_item(owner,5 if tier==3 else rng.randi_range(0,5),quality,level,rng,tier==3)
+	var slot = 5 if tier==3 else ((chapter+role)%6 if tier>=2 or forced else rng.randi_range(0,5))
+	var item = profile.make_item(owner,slot,quality,level,rng,tier==3)
+	item.drop_source = "隐藏首领" if tier==3 else ("第%d章首领"%chapter if tier>=2 else ("章节保底" if forced else "普通掉落"))
+	profile.data.chapter_pity[pity_key] = 0 if quality>=1 else pity+1
+	profile.dirty = true
+	return item

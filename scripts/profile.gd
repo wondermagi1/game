@@ -1,6 +1,7 @@
 extends RefCounted
 ## Persistent profile + small inventory/economy services. Never stores run buffs.
 const C = preload("res://scripts/catalog.gd")
+const V7 = preload("res://scripts/v7_catalog.gd")
 var data: Dictionary = {}
 var path: String = "user://profile_v2.json"
 var memory_only: bool = false
@@ -10,7 +11,7 @@ var notice: String = ""
 var events: Array = []
 
 func fresh() -> void:
-	data = {"version":5,"gold":80,"material":3,"v3_grant":true,"v7_migrated":true,"favorites":{},"abyss_best":[0,0,0],"checkpoint":{},"next_id":1,"roles":[],"inventory":[],"overflow":[],"consumables":{"potion":3,"barrier":1},"quick":["potion","barrier","thunder"],"unlocked":1,"cleared":[],"found":{},"seen":{},"achievements":{},"claimed":{},"legend_misses":0,"exploration":{},"boss_misses":0,"secret":false,"chapter_pity":{},"camp_dialogue":{}}
+	data = {"version":5,"gold":80,"material":3,"v3_grant":true,"v7_migrated":true,"v7_gear_migrated":true,"favorites":{},"abyss_best":[0,0,0],"checkpoint":{},"next_id":1,"roles":[],"inventory":[],"overflow":[],"consumables":{"potion":3,"barrier":1},"quick":["potion","barrier","thunder"],"unlocked":1,"cleared":[],"found":{},"seen":{},"achievements":{},"claimed":{},"legend_misses":0,"exploration":{},"boss_misses":0,"secret":false,"chapter_pity":{},"camp_dialogue":{}}
 	for role in range(3):
 		data.roles.append({"level":1,"xp":0,"talents":{},"skills":[1,1,1,1],"spent":0,"resets":0,"equipped":{}})
 		var rng = RandomNumberGenerator.new()
@@ -112,6 +113,13 @@ func load_profile() -> void:
 	if not data.get("v7_migrated",false):
 		data.v7_migrated = true
 		notice = "第七版构筑系统已启用：旧角色、装备、天赋、货币和章节进度均已保留。"
+	if not data.get("v7_gear_migrated",false):
+		for item in data.inventory+data.overflow:
+			if int(item.quality)>=2 and not item.has("mechanic"):
+				var branch_index = int(item.slot)%3
+				item.mechanic = V7.gear_mechanic(int(item.role),branch_index).id
+				item.build_branch = branch_index
+		data.v7_gear_migrated = true
 	if int(data.get("version",1))<4: notice = "第四版成长已补齐：每级 2 点，5–30 级每 5 级额外 2 点；原有投入保留。"
 	data.version = C.VERSION
 	dirty = true
@@ -149,6 +157,10 @@ func make_item(role: int, slot: int, quality: int, level: int, rng: RandomNumber
 	for i in range([0,1,2,2][quality]):
 		var at = rng.randi_range(0,pool.size()-1)
 		item.affixes.append(pool.pop_at(at))
+	if quality>=2:
+		var branch_index = rng.randi_range(0,2)
+		item.mechanic = V7.gear_mechanic(role,branch_index).id
+		item.build_branch = branch_index
 	return item
 
 func item_name(item: Dictionary) -> String:
@@ -268,6 +280,9 @@ func permanent_bonuses(role: int) -> Dictionary:
 		for key in props: result[key] = float(result.get(key,0))+props[key]
 		if int(item.quality)==3 and int(item.slot)==0: result["legend_weapon"] = 1.0
 		if item.get("hidden",false): result["hidden_relic"] = 1.0
+		if item.has("mechanic"):
+			var branch_index = int(item.get("build_branch",int(item.slot)%3))
+			result["gear_branch_%d"%branch_index] = float(result.get("gear_branch_%d"%branch_index,0))+1.0
 	for t in C.PASSIVES:
 		result[t.key] = float(result.get(t.key,0))+int(r.talents.get(t.id,0))*t.amount
 	var count = set_count(role)

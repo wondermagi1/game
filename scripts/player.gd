@@ -251,8 +251,11 @@ func heal(amount: float) -> void:
 	game.telemetry.healing += restored
 	if restored > 0: game.fx.number(global_position,restored,Color("#89edb3"))
 
-func on_kill() -> void:
+func on_kill(enemy = null) -> void:
 	kill_buff = 2.0
+	if stats.role==1 and stats.bonus("gear_branch_1")>0 and is_instance_valid(enemy) and enemy.last_source in ["bomb","explosion","v7_greatsword","skill_0"]:
+		ammo = mini(magazine_size(),ammo+1)
+		game.fx.caption(global_position-Vector2(60,82),"爆破解闩 +1",Color("#ffc06c"))
 	if heal_clock <= 0 and stats.bonus("kill_heal") > 0:
 		heal(stats.bonus("kill_heal"))
 		heal_clock = 0.7
@@ -277,7 +280,7 @@ func _draw() -> void:
 	if orbit_time > 0:
 		var r = 150.0+stats.bonus("orbit")*25.0+(skills.rank(0)-1)*20
 		draw_arc(Vector2.ZERO,r,0,TAU,64,Color(0.4,0.9,0.85,0.18),2,true)
-		var sword_count = 5+(2+skills.tier(0) if skills.branch(0)==0 else 0)
+		var sword_count = 5+(2+skills.tier(0)+int(stats.bonus("gear_branch_0")) if skills.branch(0)==0 else 0)
 		for i in range(sword_count):
 			var angle = orbit_time*4+i*TAU/sword_count
 			var p = Vector2.from_angle(angle)*r

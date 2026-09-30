@@ -122,16 +122,17 @@ func decorate_normal(properties: Dictionary) -> Dictionary:
 	var selected = dominant_branch()
 	if role==0 and selected==2:
 		properties.can_return = true
-		properties.pierce = int(properties.get("pierce",1))+maxi(1,tier(0))
+		properties.pierce = int(properties.get("pierce",1))+maxi(1,tier(0))+int(actor.stats.bonus("gear_branch_2"))
+		properties.bounce = int(properties.get("bounce",0))+int(actor.stats.bonus("gear_branch_2"))
 	elif role==1 and selected==1 and bool(properties.get("empowered",false)):
-		properties.explosion = 65.0+30.0*maxi(1,tier(2))
+		properties.explosion = 65.0+30.0*maxi(1,tier(2))+12.0*actor.stats.bonus("gear_branch_1")
 	elif role==2 and selected==0:
-		properties.bounce = int(properties.get("bounce",0))+maxi(1,tier(1))
+		properties.bounce = int(properties.get("bounce",0))+maxi(1,tier(1))+int(actor.stats.bonus("gear_branch_0"))
 	elif role==2 and selected==1:
-		properties.body_length = 75.0+25.0*maxi(1,tier(0))
-		properties.hit_width = 8.0+4.0*maxi(1,tier(0))
+		properties.body_length = 75.0+25.0*maxi(1,tier(0))+18.0*actor.stats.bonus("gear_branch_1")
+		properties.hit_width = 8.0+4.0*maxi(1,tier(0))+3.0*actor.stats.bonus("gear_branch_1")
 	elif role==2 and selected==2:
-		properties.bounce = int(properties.get("bounce",0))+2
+		properties.bounce = int(properties.get("bounce",0))+2+int(actor.stats.bonus("gear_branch_2"))
 	return properties
 
 func tick(delta: float) -> void:
@@ -251,7 +252,8 @@ func apply_v7_skill(role: int, slot: int, center: Vector2) -> void:
 				for i in range(2+level): shot(actor.aim.rotated((i-(1+level)*0.5)*0.22),0.35+level*0.12,3,"v7_array")
 				game.add_zone(actor.global_position,155+level*25,0.25,0.35,attack*(0.25+level*0.12),"v7_array",2+level)
 			elif selected==1:
-				shot(actor.aim,1.8+level*0.8,12,"v7_greatsword",{"body_length":230.0+level*65,"hit_width":30.0+level*9,"speed":1050.0,"remaining":1450.0})
+				var gear_power = actor.stats.bonus("gear_branch_1")
+				shot(actor.aim,(1.8+level*0.8)*(1+gear_power*0.08),12,"v7_greatsword",{"body_length":230.0+level*65+gear_power*28,"hit_width":30.0+level*9+gear_power*4,"speed":1050.0,"remaining":1450.0})
 				game.shake_strength = maxf(game.shake_strength,(2+level)*game.effects_intensity)
 			else:
 				for side in [-1,1]: shot(actor.aim.rotated(side*0.16),0.8+level*0.25,6,"v7_return",{"can_return":true,"remaining":900.0})
@@ -260,7 +262,8 @@ func apply_v7_skill(role: int, slot: int, center: Vector2) -> void:
 				heat = minf(100,heat+15+level*7)
 				game.add_zone(center,125+level*22,0.25,0.5,attack*(0.3+level*0.15),"v7_fire",2+level)
 			elif selected==1:
-				game.explode(center,135+level*45,attack*(0.75+level*0.45),true)
+				var gear_power = actor.stats.bonus("gear_branch_1")
+				game.explode(center,135+level*45+gear_power*18,attack*(0.75+level*0.45+gear_power*0.10),true,"skill_%d"%slot)
 				game.art.emit("blast",center,actor.aim,120+level*55,0.45,1)
 			else:
 				for enemy in game.enemies:
@@ -269,14 +272,15 @@ func apply_v7_skill(role: int, slot: int, center: Vector2) -> void:
 						enemy.powder_mark = maxf(enemy.powder_mark,7)
 		2:
 			if selected==0:
-				game.add_zone(center,190+level*35,0.3,0.55,attack*(0.35+level*0.18),"v7_storm",3+level*2)
+				game.add_zone(center,190+level*35+actor.stats.bonus("gear_branch_0")*12,0.3,0.55,attack*(0.35+level*0.18),"v7_storm",3+level*2+int(actor.stats.bonus("gear_branch_0")))
 			elif selected==1:
-				shot(actor.aim,2.2+level,16,"v7_giant_arrow",{"body_length":260.0+level*85,"hit_width":32.0+level*12,"speed":1350.0,"remaining":1700.0})
+				var gear_power = actor.stats.bonus("gear_branch_1")
+				shot(actor.aim,(2.2+level)*(1+gear_power*0.08),16,"v7_giant_arrow",{"body_length":260.0+level*85+gear_power*30,"hit_width":32.0+level*12+gear_power*5,"speed":1350.0,"remaining":1700.0})
 				game.shake_strength = maxf(game.shake_strength,(2+level)*game.effects_intensity)
 			else:
 				for side in [-1,1]:
 					var trap = game.safe_position(center+actor.aim.orthogonal()*side*(75+level*20))
-					game.add_zone(trap,85+level*15,0.7,0.35,attack*(0.45+level*0.18),"v7_trap",2+level)
+					game.add_zone(trap,85+level*15,0.7,0.35,attack*(0.45+level*0.18),"v7_trap",2+level+int(actor.stats.bonus("gear_branch_2")))
 	if slot==3 and level>=2:
 		game.presentation_fx.emit("ultimate",center,actor.aim,role,2+level)
 		game.fx.burst(center,actor.stats.base.color,24+level*10)
@@ -293,7 +297,7 @@ func on_attack() -> void:
 	attacks += 1
 	if actor.stats.role==1 and dominant_branch()==0:
 		heat = minf(110,heat+5+maxi(0,tier(0)))
-		if heat>=100:
+		if heat>=100+actor.stats.bonus("gear_branch_0")*8:
 			heat = 68
 			actor.reload_time = maxf(actor.reload_time,0.55)
 			game.explode(actor.global_position,115,actor.stats.value("attack")*0.8,false)
