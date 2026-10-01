@@ -53,7 +53,7 @@ func _ready() -> void:
 	var classic=TextureRect.new();classic.name="Classic";classic.position=Vector2(1260,320);classic.size=Vector2(430,580);classic.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;classic.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;add_child(classic)
 	info=text("",Vector2(530,890),22)
 	frame_label=text("",Vector2(530,930),21)
-	text("当前基础图集：每职业 8 朝向 × 4 帧组。技能暂共用释放姿态，并非 25 套独立动作。",Vector2(80,1000),21)
+	text("当前基础图集：每职业 8 朝向 × 4 原画组；行走由 8 相位形变补间平滑播放。",Vector2(80,1000),21)
 	button("返回",Vector2(1680,55),func():closed.emit();queue_free())
 	refresh()
 func refresh() -> void:
@@ -68,7 +68,10 @@ func advance(delta: float) -> void:
 	actor._process(delta);actor.death_time=elapsed if actor.dying else 0
 	phase_slider.set_value_no_signal(elapsed)
 	info.text="%s  /  朝向 %d  /  时间 %.2f 秒"%[NAMES[selected_action],actor.facing_index,elapsed]
-	frame_label.text="帧组 %d · 八方向为离散朝向；部分弓箭朝向仍需补画精修。"%actor.selected_row
+	if actor.movement.length()>.08:
+		frame_label.text="步态相位 %d/8 · 原画组 %d · 速度驱动播放"%[actor.walk_frame_index()+1,actor.selected_row]
+	else:
+		frame_label.text="动作原画组 %d · 当前动作不播放步态"%actor.selected_row
 	actor.queue_redraw()
 func emit_preview() -> void:
 	var p=actor.position+actor.muzzle_local()*actor.scale

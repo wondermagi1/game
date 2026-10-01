@@ -6,6 +6,8 @@ extends "res://scripts/actor_v6.gd"
 static var whole_textures: Dictionary={}
 static var whole_regions: Dictionary={}
 static var frame_meshes: Dictionary={}
+const WALK_PHASE_COUNT: int=8
+const WALK_ROWS=[0,1,1,0,0,2,2,0]
 var selected_row: int=0
 var last_move: float=0
 var motion_phase: float=0
@@ -27,19 +29,55 @@ func full_texture() -> Texture2D:
 func play_gesture(id: String,duration: float=.35) -> void:
 	super.play_gesture(id,duration)
 	if clip==id and id in ["attack","skill_0","skill_1","skill_2","ultimate_gather","ultimate_finish","combo"]:selected_row=3
-func frame_data() -> Dictionary:
+func frame_data(row: int=-1) -> Dictionary:
 	if whole_regions.is_empty():whole_regions=JSON.parse_string(FileAccess.get_file_as_string("res://art/v6/integrated_regions.json"))
-	return whole_regions[str(kind)][selected_row*8+facing_index]
-func frame_mesh() -> ArrayMesh:
-	var key=str(kind)+":"+str(selected_row*8+facing_index)
+	var source_row=selected_row if row<0 else row
+	return whole_regions[str(kind)][source_row*8+facing_index]
+func walk_phase() -> float:
+	var id=forced_clip if not forced_clip.is_empty() else clip
+	if override_phase>=0 and id.begins_with("run"):return fposmod(override_phase,1.0)
+	return fposmod(motion_phase,1.0)
+func walk_frame_index() -> int:
+	return mini(WALK_PHASE_COUNT-1,int(walk_phase()*WALK_PHASE_COUNT))
+func walk_render_active() -> bool:
+	var id=forced_clip if not forced_clip.is_empty() else clip
+	return is_hero() and not dying and movement.length()>.08 and id!="dash" and selected_row<3
+func gait_warp(point: Vector2, frame: int=-1) -> Vector2:
+	if frame<0:return point
+	var phase=float(frame)/WALK_PHASE_COUNT
+	var upper=clampf(-point.y/112.0,0.0,1.0)
+	var stride=sin(phase*TAU)
+	var double_step=sin(phase*TAU*2.0)
+	# Keep the integrated character and weapon together while the horizontal
+	# bands provide eight subtle in-between silhouettes. Feet stay anchored.
+	return point+Vector2((stride*1.35+double_step*.45)*upper,-absf(stride)*1.05*upper)
+func gait_offset() -> Vector2:
+	if not walk_render_active() or reduced:return Vector2.ZERO
+	var phase=walk_phase()
+	return Vector2(sin(phase*TAU)*.35,-absf(sin(phase*TAU))*1.4)
+func gait_rotation() -> float:
+	if not walk_render_active() or reduced:return 0.0
+	return sin(walk_phase()*TAU)*.009
+func gait_scale() -> Vector2:
+	if not walk_render_active() or reduced:return Vector2.ONE
+	var lift=absf(sin(walk_phase()*TAU))
+	return Vector2(1.0+lift*.005,1.0-lift*.009)
+func gait_point(point: Vector2) -> Vector2:
+	if not walk_render_active():return point
+	var warped=gait_warp(point,walk_frame_index())*gait_scale()
+	return warped.rotated(gait_rotation())+gait_offset()
+func frame_mesh(row: int=-1, gait_frame: int=-1) -> ArrayMesh:
+	var source_row=selected_row if row<0 else row
+	var key=str(kind)+":"+str(source_row*8+facing_index)+":"+str(gait_frame)
 	if frame_meshes.has(key):return frame_meshes[key]
-	var data=frame_data();var r=data.rect
+	var data=frame_data(source_row);var r=data.rect
 	var anchor=Vector2(data.anchor[0],data.anchor[1]);var size=full_texture().get_size()
 	var verts=PackedVector2Array();var uvs=PackedVector2Array();var indices=PackedInt32Array()
 	for b in data.bands:
 		var n=verts.size()
 		for v in [Vector2(b[0],b[1]),Vector2(b[2],b[1]),Vector2(b[2],minf(b[3],b[1]+4)),Vector2(b[0],minf(b[3],b[1]+4))]:
-			verts.append((v-anchor)*(126.0/275)*Vector2(facing_mirror(),1));uvs.append((v+Vector2(r[0],r[1]))/size)
+			var local=(v-anchor)*(126.0/275)*Vector2(facing_mirror(),1)
+			verts.append(gait_warp(local,gait_frame));uvs.append((v+Vector2(r[0],r[1]))/size)
 		indices.append_array(PackedInt32Array([n,n+1,n+2,n,n+2,n+3]))
 	var arrays=[];arrays.resize(Mesh.ARRAY_MAX);arrays[Mesh.ARRAY_VERTEX]=verts;arrays[Mesh.ARRAY_TEX_UV]=uvs;arrays[Mesh.ARRAY_INDEX]=indices
 	var mesh=ArrayMesh.new();mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES,arrays)
@@ -48,7 +86,8 @@ func muzzle_local() -> Vector2:
 	if articulated_preview:return super.muzzle_local()
 	update_pose()
 	var data=frame_data();var r=data.rect
-	return (Vector2(r[2],r[3])*TIP_UV[kind][facing_index]-Vector2(data.anchor[0],data.anchor[1]))*(126.0/275)*Vector2(facing_mirror(),1)+frame_offset()
+	var point=(Vector2(r[2],r[3])*TIP_UV[kind][facing_index]-Vector2(data.anchor[0],data.anchor[1]))*(126.0/275)*Vector2(facing_mirror(),1)
+	return gait_point(point)+frame_offset()
 func frame_offset() -> Vector2:
 	var phase=clampf(clip_time/maxf(.01,clip_length),0,1)
 	if clip=="attack":return -aim*2*pow(1-phase,2)
@@ -80,14 +119,17 @@ func _process(delta: float) -> void:
 	if not is_hero():return
 	var parent=get_parent()
 	if parent!=null and "game" in parent and parent.game!=null and parent.game.state not in ["combat","end"]:return
-	motion_phase+=delta*playback_speed*clampf(movement.length(),.15,1.5)*8
 	var id=forced_clip if not forced_clip.is_empty() else clip
+	var move_strength=clampf(movement.length(),0.0,1.25)
+	if move_strength>.08 and not (override_phase>=0 and id.begins_with("run")):
+		# Eight visual phases yield about 13-19 gait updates each second at normal speed.
+		var cadence=lerpf(1.55,2.35,clampf((move_strength-.08)/.92,0.0,1.0))
+		motion_phase=fposmod(motion_phase+delta*playback_speed*cadence,1.0)
 	selected_row=0
-	if movement.length()>.08 or id in ["run_forward","run_back","strafe_left","strafe_right"]:selected_row=[1,0,2,0][int(motion_phase)%4]
+	if movement.length()>.08 or id in ["run_forward","run_back","strafe_left","strafe_right"]:selected_row=WALK_ROWS[walk_frame_index()]
 	if id in ["attack","skill_0","skill_1","skill_2","ultimate_gather","ultimate_sustain","ultimate_finish","combo","dash"]:
 		# Keep the authored running frames between short attack releases at high fire rates.
 		if movement.length()<=.08 or clip_time<minf(.08,clip_length*.3) or id=="dash":selected_row=3
-	if override_phase>=0 and id.begins_with("run"):selected_row=1+mini(1,int(override_phase*2))
 	if movement.length()>.08 and last_move<=.08 and id in ["ready","idle","run_forward"]:play_gesture("start",.12)
 	if movement.length()<=.08 and last_move>.08 and id.begins_with("run"):play_gesture("stop",.12)
 	last_move=movement.length()
@@ -110,8 +152,8 @@ func _draw() -> void:
 	if quality>=2:
 		draw_texture_rect(preload("res://art/v6/fx/light_01.png"),Rect2(-42,-98,84,80),false,Color(P.QUALITY[clampi(quality,0,3)],.10*fade))
 	if dash_trail>0 and not reduced:draw_mesh(frame_mesh(),full_texture(),Transform2D(0,-aim*18),Color(tint,.18))
-	draw_set_transform(offset+Vector2(0,death_time*12),0,Vector2(1,1-death_time*.15))
-	draw_mesh(frame_mesh(),full_texture(),Transform2D.IDENTITY,Color(1.15 if flash>0 else 1,1.15 if flash>0 else 1,1.15 if flash>0 else 1,fade))
+	draw_set_transform(offset+gait_offset()+Vector2(0,death_time*12),gait_rotation(),gait_scale()*Vector2(1,1-death_time*.15))
+	draw_mesh(frame_mesh(selected_row,walk_frame_index() if walk_render_active() else -1),full_texture(),Transform2D.IDENTITY,Color(1.15 if flash>0 else 1,1.15 if flash>0 else 1,1.15 if flash>0 else 1,fade))
 	draw_set_transform(Vector2.ZERO)
 	if debug_joints:
 		draw_circle(Vector2.ZERO,2,Color.CYAN)
