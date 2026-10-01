@@ -73,4 +73,4 @@ WASD 移动，鼠标瞄准，左键普攻；Space 闪避，R 换弹；E/Q/F/C �
 
 噜噜已接入新的 24 帧专用战斗图集，基础待机/跑步仍复用 MIT 原始资源；受击目前为亮度反馈。局部法线、真实动态灯光和热扰动未实现。音频已做加载、峰值与混音通道检查，仍需人工试听与细调。
 
-详见 [第七版更新日志](docs/V7_CHANGELOG.md)、[实现说明](docs/V7_GUIDE.md)、[后续美术与玩法方向](docs/V7_NEXT_STEPS.md)、[本轮测试与性能](TEST_REPORT.md) 以及 [第七版验收截图](docs/screenshots-v7)。旧版文档为历史记录。
+详见 [第八版更新日志](docs/V8_CHANGELOG.md)、[第八版交付说明](docs/V8_DELIVERY.md)、[本轮测试与性能](TEST_REPORT.md) 以及 [第八版验收截图](docs/screenshots-v8)。第七版及更早文档作为历史记录保留。
