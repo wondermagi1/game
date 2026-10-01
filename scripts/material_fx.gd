@@ -13,10 +13,35 @@ func add(type: String, pos: Vector2, velocity: Vector2, size: Vector2, duration:
 	bits.append({"type":type,"p":pos,"v":velocity,"size":size,"life":duration,"max":duration,"c":color,"a":angle,"variant":rng.randi_range(0,2)})
 func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float, quality: float) -> void:
 	# Gunner uses V5 flashes/rings again, also in the action inspector.
-	if role==1:return
+	# V8 ultimate layers are additive visuals and intentionally keep the accepted
+	# V5 gun/bow audio and ordinary attack presentation unchanged.
+	if role==1 and not kind.begins_with("v8_"):return
 	var cap=24 if quality<.5 else (48 if quality<.8 else 80)
 	var color=[Color("#99f7ef"),Color("#ffb269"),Color("#a5e9bc")][clampi(role,0,2)]
-	if kind=="shot":
+	if kind=="v8_gather":
+		var gather_size=clampf(strength*58,80,220)
+		add("magic",pos,Vector2.ZERO,Vector2.ONE*gather_size,.65,Color(color,.72),dir.angle(),cap)
+		add("light",pos,Vector2.ZERO,Vector2.ONE*gather_size*1.15,.32,Color(color,.45),0,cap)
+		for i in range(1 if quality<.5 else 3):
+			var drift=Vector2.from_angle(dir.angle()+PI+(i-1)*.65)
+			add("smoke",pos+drift*25,drift*20+Vector2(0,-18),Vector2.ONE*(40+i*12),.75,Color(color,.22),i*.7,cap)
+		if role==1:
+			add("flame",pos+dir*18,dir*28,Vector2(54,96),.34,Color("#ffc06a"),dir.angle()+PI/2,cap)
+	elif kind=="v8_sustain":
+		var sustain_size=clampf(strength*34,44,150)
+		add("magic",pos,dir*10,Vector2.ONE*sustain_size,.28,Color(color,.48),dir.angle(),cap)
+		if role==1:
+			add("smoke",pos-dir*12,Vector2(0,-30),Vector2.ONE*sustain_size*.7,.62,Color(.4,.42,.46,.35),0,cap)
+	elif kind in ["v8_impact","v8_finish"]:
+		var finish_size=clampf(strength*(58 if kind=="v8_finish" else 38),70,280)
+		if role==1:add("explosion",pos,Vector2.ZERO,Vector2.ONE*finish_size,.52,Color.WHITE,dir.angle(),cap)
+		else:add("magic",pos,Vector2.ZERO,Vector2.ONE*finish_size,.44,Color(color,.82),dir.angle()+PI*.25,cap)
+		add("light",pos,Vector2.ZERO,Vector2.ONE*finish_size*1.35,.22,Color(color,.62),0,cap)
+		add("magic",pos,Vector2.ZERO,Vector2.ONE*finish_size*1.15,.48,Color(color,.64),-dir.angle(),cap)
+		for i in range(2 if quality<.5 else 4):
+			var out=Vector2.from_angle(i*TAU/4+dir.angle())
+			add("smoke",pos+out*finish_size*.12,out*45+Vector2(0,-25),Vector2.ONE*finish_size*.38,.8,Color(color,.24),i,cap)
+	elif kind=="shot":
 		if role==1:
 			add("flame",pos+dir*14,dir*35,Vector2(26,60),.10,Color("#ffe5a0"),dir.angle()+PI/2,cap)
 			add("light",pos,Vector2.ZERO,Vector2(72,60),.075,Color(1,.57,.22,.5),0,cap)

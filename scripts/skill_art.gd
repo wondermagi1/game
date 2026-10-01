@@ -29,6 +29,36 @@ func _draw() -> void:
 		var color: Color = PALETTE[g.role]
 		color.a = minf(1,g.life*5)
 		match g.kind:
+			"sword_halo":
+				draw_set_transform(g.p)
+				for ring in range(3):
+					var radius=g.size*(.48+ring*.18)*(0.88+sin(progress*PI)*.12)
+					draw_arc(Vector2.ZERO,radius,progress*TAU*(1 if ring%2==0 else -1),TAU+progress*TAU,32,Color(color,.42-ring*.09),3-ring*.55,true)
+				for i in range(8):
+					var angle=i*TAU/8+progress*1.8
+					draw_set_transform(g.p+Vector2.from_angle(angle)*g.size*.72,angle+PI*.5)
+					weapon(self,0,58+g.size*.08,3.5,Color(color,.78))
+			"gun_heat":
+				draw_set_transform(g.p,g.dir.angle())
+				for i in range(4):
+					var x=-g.size*.3+i*g.size*.2
+					var flame=20+sin(progress*TAU+i)*8
+					draw_colored_polygon(PackedVector2Array([Vector2(x,-10),Vector2(x+flame,-28-i*3),Vector2(x+12,0),Vector2(x+flame,28+i*3),Vector2(x,10)]),Color(color,.16+i*.05))
+				draw_arc(Vector2.ZERO,g.size*(.4+progress*.35),-.9,.9,30,Color(color,.72),5,true)
+			"bow_constellation":
+				draw_set_transform(g.p,g.dir.angle())
+				draw_arc(Vector2.ZERO,g.size*.72,-1.25,1.25,40,Color(color,.75),5,true)
+				draw_line(Vector2.from_angle(-1.25)*g.size*.72,Vector2(-30-progress*18,0),Color(color,.7),2,true)
+				draw_line(Vector2.from_angle(1.25)*g.size*.72,Vector2(-30-progress*18,0),Color(color,.7),2,true)
+				for i in range(7):
+					var star=Vector2(-g.size*.25+i*g.size*.09,sin(i*2.1+progress*TAU)*g.size*.18)
+					draw_circle(star,3+i%2,Color("#f6eeff"))
+					if i>0:draw_line(star,Vector2(-g.size*.25+(i-1)*g.size*.09,sin((i-1)*2.1+progress*TAU)*g.size*.18),Color(color,.38),1.5,true)
+			"residue":
+				draw_set_transform(g.p,0,Vector2(1,.38))
+				for i in range(3):
+					var radius=g.size*(.3+i*.2+progress*.12)
+					draw_arc(Vector2.ZERO,radius,progress*TAU+i*.7,TAU+progress*TAU,32,Color(color,(1-progress)*(.34-i*.06)),3-i*.5,true)
 			"fall", "finish":
 				var p: Vector2 = g.p-Vector2(0,pow(1-progress,3)*g.size*1.4)
 				draw_set_transform(p,PI*0.5)

@@ -29,8 +29,13 @@ func start(point: Vector2) -> void:
 	empowered = (skills.windows[1]>0 if role==0 else (skills.tactical_time>0 if role==1 else skills.windows[2]>0))
 	var game = skills.game
 	var actor = skills.actor
-	game.art.emit("gather",actor.global_position,actor.aim,100,0.5,role)
-	game.art.emit("gather",center,actor.aim,radius(),0.6,role)
+	# Sword and bow benefit from orbiting physical weapons. The gunner keeps the
+	# accepted firearm silhouette and uses heat/smoke instead of floating bars.
+	if role!=1:
+		game.art.emit("gather",actor.global_position,actor.aim,100,0.5,role)
+		game.art.emit("gather",center,actor.aim,radius(),0.6,role)
+	game.art.emit(["sword_halo","gun_heat","bow_constellation"][role],actor.global_position,actor.aim,190,1.05,role)
+	game.presentation_fx.emit("v8_gather",actor.global_position+actor.visual.muzzle_local(),actor.aim,role,2.4)
 	game.sound.play("ultimate_%d_start"%role)
 	game.fx.caption(actor.global_position-Vector2(80,100),["万剑归宗","炼狱火力","群星逐猎"][role],game.art.PALETTE[role])
 	if role==2:
@@ -88,6 +93,8 @@ func tick(delta: float) -> void:
 				game.presentation_fx.emit("shot",actor.global_position+actor.visual.muzzle_local(),dir,role,1.6)
 			game.sound.play("ultimate_%d_loop"%role)
 			if rank>=5 and ticks%4==0: skills.shot(dir.rotated(0.12),factor*0.5,2,"guardian",{"body_length":65.0,"hit_width":7.0})
+		if ticks%maxi(1,limit/6)==0:
+			game.presentation_fx.emit("v8_sustain",center,actor.aim,role,1.5+rank*.06)
 		ticks += 1
 	if elapsed>=duration+0.15: finish()
 func strike(factor: float, kind: String) -> void:
@@ -100,6 +107,7 @@ func strike(factor: float, kind: String) -> void:
 			var offset = Vector2.from_angle((ticks*3+i)*2.4)*(45+i*55)
 			game.art.emit("fall",center+offset,Vector2.DOWN,135+(rank*4),0.35,0)
 		game.sound.play("ultimate_0_loop")
+		game.presentation_fx.emit("v8_impact",center,Vector2.DOWN,0,1.5+rank*.08)
 		for enemy in game.enemies:
 			if not enemy.is_boss() and enemy.global_position.distance_to(center)<radius(): enemy.slow_time = maxf(enemy.slow_time,0.4)
 func finish() -> void:
@@ -116,6 +124,8 @@ func finish() -> void:
 	game.art.emit("finish" if role!=1 else "blast",center,actor.aim,460 if rank>=10 else (370 if rank>=8 else 310),0.7,role)
 	game.fx.burst(center,game.art.PALETTE[role],60)
 	game.presentation_fx.emit("ultimate",center,actor.aim,role,4)
+	game.presentation_fx.emit("v8_finish",center,actor.aim,role,3.4+rank*.12)
+	game.art.emit("residue",center,actor.aim,radius()+70,1.1,role)
 	game.sound.play("ultimate_%d_finish"%role)
 	game.shake_strength = 6*game.effects_intensity
 	if rank>=5 and role==0:
