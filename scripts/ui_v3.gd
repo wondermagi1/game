@@ -250,7 +250,7 @@ func codex_entries() -> Array:
 		for i in range(6):
 			var c: Dictionary = C.CHAPTERS[i]
 			entries.append({"id":"chapter_%d"%(i+1),"name":c.name,"text":c.hint+"\n推荐构筑："+C.DIFFICULTY[i].build+"\n%d 回合，每回合最多三波。目标 %s；通关解锁后章。"%[c.waves.size(),C.PACING[i].target],"role":-1,"quality":-1,"hidden":false})
-		entries.append({"id":"mode_abyss","name":"无尽深渊","text":"完成第六章解锁。每层奖励三选一；5层精英+整备，10层首领替代普通战。整备点可保存退出。\nBuff 无层数上限，5/10/20/40 阶段进化，工程上限超额转换攻击收益。临时技能每5层提升一次，最高10级。\n存档包含本次构筑、随机状态和商店库存；续玩先消耗存档。退出普通战斗不保存本局。\n不屈整次深渊仅可复活一次。","role":-1,"quality":-1,"hidden":false})
+		entries.append({"id":"mode_abyss","name":"无尽深渊","text":"完成第六章解锁。每层奖励三选一；5层精英+整备，10层首领替代普通战。整备点可保存退出。\nBuff 无层数上限，3/5/10/20 层依次完成基础强化、追加机制、形态变化和高级质变；20层后每10层循环突破。临时技能每5层提升一次，最高10级。\n存档包含本次构筑、随机状态和商店库存；续玩先消耗存档。退出普通战斗不保存本局。\n不屈整次深渊仅可复活一次。","role":-1,"quality":-1,"hidden":false})
 	elif codex_category==7:
 		codex_category = 6
 		entries = super.codex_entries()

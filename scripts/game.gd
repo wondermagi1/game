@@ -11,6 +11,7 @@ const Catalog = preload("res://scripts/catalog.gd")
 const Profile = preload("res://scripts/profile.gd")
 const Campaign = preload("res://scripts/campaign.gd")
 const WaveDirector = preload("res://scripts/wave_director.gd")
+const BuffEvolution = preload("res://scripts/buff_progression.gd")
 var rooms = preload("res://scripts/room_run.gd").new()
 var art
 var presentation_fx
@@ -88,7 +89,7 @@ func apply_window_resolution() -> void:
 	window.position=desktop.position+Vector2i(maxi(0,(desktop.size.x-window_resolution.x)/2),maxi(0,(desktop.size.y-window_resolution.y)/2))
 
 func _ready() -> void:
-	get_window().title = "三途试炼 · 合刃同行 " + str(ProjectSettings.get_setting("application/config/version"))
+	get_window().title = "三途试炼 · 灵境重铸 " + str(ProjectSettings.get_setting("application/config/version"))
 	profile.memory_only = test_mode
 	profile.load_profile()
 	get_tree().auto_accept_quit = false
@@ -508,7 +509,15 @@ func choose_reward(index: int) -> void:
 		var layers = rooms.reward_layers if rooms.active else 1
 		for layer in range(layers):
 			if player.stats.abyss or int(player.stats.stacks.get(choice[0],0))<int(choice[5]): player.stats.apply(choice)
-		if flow.abyss and previous+1 in [5,10,20,40]: profile.events.append({"title":"Buff 进阶 · "+choice[1],"text":"已达 %d 层 · 新机制生效"%(previous+1)})
+		var current: int = int(player.stats.stacks.get(choice[0],0))
+		if flow.abyss:
+			for milestone in BuffEvolution.crossed(previous,current):
+				var stage_name = BuffEvolution.stage_name(milestone)
+				profile.events.append({"title":"Buff 进阶 · "+choice[1],"text":"已达 %d 层 · %s生效"%[milestone,stage_name]})
+				banner = "%s进阶 · %s"%[choice[1],stage_name]
+				banner_time = 2.2
+				fx.sigils(player.global_position,95+BuffEvolution.tier(milestone)*18,Color("#f6d98a"),mini(4,BuffEvolution.tier(milestone)+1))
+				sound.play("reward")
 		profile.discover("buff_"+choice[0])
 	if choice[3]=="heal": player.heal(player.stats.value("hp")*float(choice[4]))
 	if choice[3]=="hp": player.heal(float(choice[4]))

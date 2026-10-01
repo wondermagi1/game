@@ -1,5 +1,6 @@
 extends "res://scripts/ui_base.gd"
 const C = preload("res://scripts/catalog.gd")
+const BuffProgress = preload("res://scripts/buff_progression.gd")
 var view_role: int = 0
 var selected_uid: String = ""
 var inventory_rows: VBoxContainer
@@ -297,7 +298,8 @@ func show_characters() -> void:
 		found = true
 		r = row(rows,105,1610)
 		icon(r,Rect2(20,22,48,48),buff_icon(u[3]),Color(C.COLORS[int(u[6])]))
-		label(r,"%s ×%d / %s · 来源：清房/深渊奖励 · 本局有效"%[u[1],stats.stacks[u[0]],"∞" if stats.abyss else str(u[5])],Rect2(85,10,1490,35),25,GOLD)
+		var stage_progress = " · "+BuffProgress.progress_text(int(stats.stacks[u[0]])) if stats.abyss else ""
+		label(r,"%s ×%d / %s · 来源：清房/深渊奖励 · 本局有效%s"%[u[1],stats.stacks[u[0]],"∞" if stats.abyss else str(u[5]),stage_progress],Rect2(85,10,1490,35),25,GOLD)
 		var total = float(u[4])*int(stats.stacks[u[0]])
 		var summary = " · 累计："+C.stat_text(u[3],total) if C.STAT_NAMES.has(u[3]) else ""
 		label(r,u[2]+summary,Rect2(85,50,1490,44),22)

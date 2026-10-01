@@ -6,7 +6,7 @@ var combo_pulse: float=0
 func show_menu() -> void:
 	super.show_menu()
 	for child in overlay.get_children():
-		if child is Label: child.text = child.text.replace("合刃同行  0.6.2","九流化境  0.7.0")
+		if child is Label: child.text = child.text.replace("合刃同行  0.6.2","灵境重铸  0.8.0").replace("九流化境  0.7.0","灵境重铸  0.8.0")
 	box(overlay,Rect2(1050,120,715,70),Color("#10232d"),Color("#6d8d86"))
 	label(overlay,V7.CAMP_NPC+"："+camp_story_line(),Rect2(1070,130,675,50),17,Color("#c8e5d9"))
 
@@ -44,7 +44,8 @@ func show_rewards(choices: Array) -> void:
 			var current = game.player.skills.evolutions.get(str(parsed.get("slot",-1)),{})
 			state_text = "当前：未定路线" if current.is_empty() else "当前：%s %d阶"%[V7.BUILD_NAMES[game.selected_role][int(current.branch)],int(current.tier)]
 		else:
-			state_text = "已获得 %d / %d 层 · 本局有效"%[game.player.stats.stacks.get(u[0],0),u[5]]
+			var count = int(game.player.stats.stacks.get(u[0],0))
+			state_text = "已获得 %d 层 · %s"%[count,Evo.progress_text(count)] if game.flow.abyss else "已获得 %d / %d 层 · 本局有效"%[count,u[5]]
 		label(overlay,state_text,Rect2(x+35,705,460,42),21,c)
 		button(overlay,"选择进化 →" if u[3]=="evolution" else "选择强化 →",Rect2(x+35,790,460,62),game.choose_reward.bind(i),c)
 	button(overlay,"重抽奖励 · 剩余 %d"%game.player.skills.rerolls,Rect2(130,925,420,55),game.reroll_rewards).disabled = game.player.skills.rerolls<=0
@@ -78,6 +79,15 @@ func show_characters() -> void:
 	super.show_characters()
 	if is_instance_valid(game.player) and view_role==game.selected_role:
 		button(overlay,"本局流派构筑",Rect2(1470,294,320,54),show_build_panel,Color("#85cfc2"))
+		if game.player.stats.abyss:
+			for child in buff_bar.get_children():
+				if not child is Button: continue
+				var buff_name = child.text.get_slice(" ×",0)
+				for u in Data.UPGRADES:
+					if u[1]!=buff_name: continue
+					var count = int(game.player.stats.stacks.get(u[0],0))
+					child.tooltip_text = u[2]+"\n"+Evo.progress_text(count)+" · 深渊无限叠加"
+					break
 
 func render_item_detail() -> void:
 	super.render_item_detail()
@@ -161,4 +171,4 @@ func codex_entries() -> Array:
 func page_start(title: String, subtitle: String, key: String) -> void:
 	super.page_start(title,subtitle,key)
 	for child in overlay.get_children():
-		if child is Label: child.text = child.text.replace("第六版 · 合刃同行","第七版 · 九流化境")
+		if child is Label: child.text = child.text.replace("第六版 · 合刃同行","第八版 · 灵境重铸").replace("第七版 · 九流化境","第八版 · 灵境重铸")

@@ -38,7 +38,7 @@ func overflow_power() -> float:
 	extra += maxf(0,float(base.crit)+raw_bonus("crit")-0.8)
 	extra += maxf(0,float(base.rate)*(1+raw_bonus("rate_pct"))-12.5)*0.05
 	extra += maxf(0,float(base.speed)*(1+raw_bonus("speed_pct"))-650)*0.0005
-	for u in Data.UPGRADES: extra += Evolution.tier(int(stacks.get(u[0],0)))*0.1
+	for u in Data.UPGRADES: extra += Evolution.power_nodes(int(stacks.get(u[0],0)))*0.1
 	return extra
 
 func value(key: String) -> float:

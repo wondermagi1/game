@@ -166,7 +166,7 @@ func codex_entries() -> Array:
 			for choice in preload("res://scripts/room_events.gd").options(kind,game): descriptions.append(choice.name+"："+choice.text+" 费用 %d 金币"%choice.cost)
 			entries.append({"id":"event_"+kind,"name":game.rooms.Graph.EVENT_NAMES[kind],"text":"\n".join(descriptions)+"\n本局每个房间只能选择一次，回访不重置。","role":-1,"quality":-1,"hidden":false})
 	if codex_category==1:
-		entries.append({"id":"drop_rules","name":"掉落与传奇保底","text":"装备掉率：普通 7%，精英 40%，首领 100%。普通/精英装备 90% 为当前角色，首领主掉落保证当前角色。\n第5–6章条件品质（普通/稀有/史诗/传奇）：普通怪 10/40/40/10；精英 0/25/50/25；首领 0/0/60/40。\n后期首领主掉落连续三次非传奇，下次必传奇；其他来源不清空计数。当前 %d / 3。"%int(game.profile.data.legend_misses),"role":-1,"quality":-1,"hidden":false})
+		entries.append({"id":"drop_rules","name":"掉落与传奇保底","text":"装备掉率：普通 7%%，精英 40%%，首领 100%%。普通/精英装备 90%% 为当前角色，首领主掉落保证当前角色。\n第5–6章条件品质（普通/稀有/史诗/传奇）：普通怪 10/40/40/10；精英 0/25/50/25；首领 0/0/60/40。\n后期首领主掉落连续三次非传奇，下次必传奇；其他来源不清空计数。当前 %d / 3。"%int(game.profile.data.legend_misses),"role":-1,"quality":-1,"hidden":false})
 	return entries
 
 func page_start(title: String, subtitle: String, key: String) -> void:
