@@ -41,6 +41,10 @@ var revive_used: bool = false
 var dead: bool = false
 var manual_control: bool = false
 var attack_input_armed: bool = false
+var action_recovery: float = 0.0
+var attack_buffer: float = 0.0
+var skill_buffer: int = -1
+var skill_buffer_time: float = 0.0
 var scripted_movement := Vector2.ZERO
 @export var dash_duration: float = 0.18
 @export var dash_cooldown: float = 1.4
@@ -80,6 +84,10 @@ func reload_duration() -> float:
 func _physics_process(delta: float) -> void:
 	if game.state != "combat" or dead: return
 	attack_clock = maxf(0,attack_clock-delta)
+	action_recovery = maxf(0,action_recovery-delta)
+	attack_buffer = maxf(0,attack_buffer-delta)
+	skill_buffer_time = maxf(0,skill_buffer_time-delta)
+	if skill_buffer_time<=0: skill_buffer = -1
 	status_proc_clock = maxf(0,status_proc_clock-delta)
 	slow_time = maxf(0,slow_time-delta)
 	skills.tick(delta)
@@ -107,14 +115,15 @@ func _physics_process(delta: float) -> void:
 		var cursor = get_global_mouse_position()-global_position
 		if cursor.length() > 1: aim = cursor.normalized()
 		if Input.is_action_just_pressed("dash"): dash(movement)
-		if Input.is_action_just_pressed("skill"): use_skill()
+		if Input.is_action_just_pressed("skill"): request_skill(0)
 		if Input.is_action_just_pressed("reload"): reload()
 		for i in range(1,4):
-			if Input.is_action_just_pressed("skill_%d"%(i+1)): use_skill(i)
+			if Input.is_action_just_pressed("skill_%d"%(i+1)): request_skill(i)
 		for i in range(3):
 			if Input.is_action_just_pressed("item_%d"%(i+1)): use_item(i)
 		if not Input.is_action_pressed("attack"): attack_input_armed = true
-		if attack_input_armed and Input.is_action_pressed("attack") and game.ui.can_fire(): attack()
+		if attack_input_armed and Input.is_action_pressed("attack") and game.ui.can_fire(): request_attack()
+	tick_action_buffers()
 	if dash_time > 0:
 		dash_time -= delta
 		velocity = dash_direction * stats.value("speed") * 2.5
@@ -141,6 +150,13 @@ func _physics_process(delta: float) -> void:
 
 func dash(movement: Vector2) -> bool:
 	if dash_clock > 0: return false
+	# A dodge is the universal defensive cancel. Reloading is interrupted without
+	# refilling ammunition, and buffered actions are cleared to prevent accidents.
+	action_recovery = 0
+	attack_buffer = 0
+	skill_buffer = -1
+	skill_buffer_time = 0
+	if reload_time>0: reload_time = 0
 	game.telemetry.dodges += 1
 	dash_direction = movement.normalized() if movement.length()>0 else aim
 	visual.dash_trail = .25
@@ -172,6 +188,7 @@ func attack() -> bool:
 	if kill_buff > 0: rate *= 1+stats.bonus("kill_rate")
 	if stats.role == 0 and dash_buff > 0: rate *= 1.25
 	attack_clock = maxf(0.08,1.0/rate)
+	action_recovery = maxf(action_recovery,minf(0.16,attack_clock*0.55))
 	visual.aim = aim
 	visual.play_gesture("attack",minf(.32,attack_clock))
 	var empowered = first_round or skills.empowered_shots>0
@@ -209,7 +226,42 @@ func attack() -> bool:
 	return true
 
 func use_skill(slot: int = 0) -> bool:
-	return skills.use(slot)
+	var used = skills.use(slot)
+	if used: action_recovery = maxf(action_recovery,0.30 if slot==3 else 0.14)
+	return used
+
+func request_attack() -> bool:
+	if action_recovery<=0 and attack():
+		attack_buffer = 0
+		return true
+	if reload_time<=0:
+		attack_buffer = 0.16
+	return false
+
+func request_skill(slot: int) -> bool:
+	if slot<0 or slot>3: return false
+	if action_recovery<=0 and use_skill(slot):
+		skill_buffer = -1
+		skill_buffer_time = 0
+		return true
+	# Only buffer a cast that is otherwise available or about to become available.
+	# Invalid/locked skills do not occupy the queue.
+	if skills.unlocked(slot) and skills.cooldowns[slot]<=0.22:
+		skill_buffer = slot
+		skill_buffer_time = 0.22
+	return false
+
+func tick_action_buffers() -> void:
+	if action_recovery>0: return
+	if skill_buffer>=0 and skill_buffer_time>0 and skills.cooldowns[skill_buffer]<=0:
+		var slot = skill_buffer
+		skill_buffer = -1
+		skill_buffer_time = 0
+		use_skill(slot)
+		return
+	if attack_buffer>0 and attack_clock<=0 and reload_time<=0:
+		attack_buffer = 0
+		attack()
 
 func hurt(raw: float) -> void:
 	if game.state != "combat" or dead or invulnerable > 0 or dash_time > 0: return
@@ -272,6 +324,10 @@ func stage_reset() -> void:
 	orbit_time = 0
 	if not game.flow.abyss: revive_used = false
 	attack_clock = 0.25
+	action_recovery = 0
+	attack_buffer = 0
+	skill_buffer = -1
+	skill_buffer_time = 0
 	# 每回合之间给予补给；局内强化仍保留至章节挑战结束。
 	if not game.flow.abyss and (game.flow.round_number>1 or game.flow.hidden):
 		heal(stats.value("hp")*game.stage_recovery_ratio+stats.bonus("stage_heal"))
