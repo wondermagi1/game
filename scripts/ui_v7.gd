@@ -1,6 +1,7 @@
 extends "res://scripts/ui_v6.gd"
 const V7 = preload("res://scripts/v7_catalog.gd")
 const Graph = preload("res://scripts/room_graph.gd")
+var combo_pulse: float=0
 
 func show_menu() -> void:
 	super.show_menu()
@@ -11,10 +12,18 @@ func show_menu() -> void:
 
 func _process(delta: float) -> void:
 	super._process(delta)
+	combo_pulse+=delta
 	if game.state=="combat" and game.rooms.active and not game.rooms.objective_state.is_empty() and not game.rooms.objective_state.get("done",false):
 		detail_label.text += "  ·  "+game.rooms.objective_text()
 	if game.state=="combat" and is_instance_valid(game.player) and game.selected_role==1 and game.player.skills.dominant_branch()==0:
 		detail_label.text += "  ·  热量 %d%%"%roundi(game.player.skills.heat)
+	if game.state=="combat" and is_instance_valid(game.player) and is_instance_valid(combo_hint):
+		var status=game.player.skills.combo_status()
+		if not status.is_empty():
+			var time_text=" · %.1fs"%float(status.time) if float(status.time)>0 else ""
+			combo_hint.text=("连携就绪 · " if status.ready else "连携提示 · ")+str(status.title)+"｜"+bound_hint(str(status.hint))+time_text
+			combo_hint.add_theme_color_override("font_color",Color("#fff0a8") if status.ready else Color("#9fc8c1"))
+			combo_hint.modulate.a=.82+.18*sin(combo_pulse*7) if status.ready and not game.reduced_motion else 1.0
 
 func show_rewards(choices: Array) -> void:
 	var has_evolution = choices.any(func(choice): return choice[3]=="evolution")
@@ -119,7 +128,7 @@ func show_run_report() -> void:
 	box(overlay,Rect2(1260,300,535,570),INK,Color("#806653"))
 	label(overlay,"伤害构成",Rect2(155,330,460,48),31,Color("#91ddcf"))
 	label(overlay,"\n".join(damage_lines) if not damage_lines.is_empty() else "尚无有效伤害记录",Rect2(155,400,460,350),23)
-	label(overlay,"命中 %d · 暴击 %d · 最高 %.0f\n闪避 %d · 承伤 %.0f · 治疗 %.0f"%[t.hits,t.critical_hits,t.highest_hit,t.dodges,t.damage_taken,t.healing],Rect2(155,750,460,85),20,GOLD)
+	label(overlay,"命中 %d · 暴击 %d · 最高 %.0f\n连携 %d · 闪避 %d · 承伤 %.0f · 治疗 %.0f"%[t.hits,t.critical_hits,t.highest_hit,game.player.skills.combo_count if is_instance_valid(game.player) else 0,t.dodges,t.damage_taken,t.healing],Rect2(155,750,460,85),20,GOLD)
 	label(overlay,"敌群与路线",Rect2(725,330,460,48),31,Color("#c5a8ed"))
 	label(overlay,"精英击破 %d · 首领击破 %d\n\n%s"%[t.elite_kills,t.boss_kills,"\n".join(enemy_lines.slice(0,9)) if not enemy_lines.is_empty() else "尚无击破记录"],Rect2(725,400,460,310),22)
 	label(overlay,"路线：%s"%(" → ".join(route_names) if not route_names.is_empty() else "传统关卡"),Rect2(725,735,460,100),20,GOLD)

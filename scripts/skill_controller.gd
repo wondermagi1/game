@@ -21,6 +21,8 @@ var evolutions: Dictionary = {}
 var rerolls: int = 2
 var reward_count: int = 0
 var heat: float = 0.0
+var last_combo_title: String = ""
+var combo_banner_time: float = 0.0
 
 func rank(slot: int) -> int:
 	return mini(10,int(game.profile.data.roles[actor.stats.role].skills[slot])+int(temporary[slot]))
@@ -39,6 +41,8 @@ func reset() -> void:
 	legendary_cd = 0
 	set_cd = 0
 	heat = 0
+	last_combo_title = ""
+	combo_banner_time = 0
 
 func branch(slot: int) -> int:
 	return int(evolutions.get(str(slot),{}).get("branch",-1))
@@ -163,6 +167,7 @@ func tick(delta: float) -> void:
 	combo_cd = maxf(0,combo_cd-delta)
 	legendary_cd = maxf(0,legendary_cd-delta)
 	set_cd = maxf(0,set_cd-delta)
+	combo_banner_time = maxf(0,combo_banner_time-delta)
 	for i in range(4): windows[i] = maxf(0,windows[i]-delta)
 	ultimate.tick(delta)
 	rapid_time = maxf(0,ultimate.duration-ultimate.elapsed) if ultimate.active and actor.stats.role==2 else 0
@@ -245,7 +250,7 @@ func use(slot: int) -> bool:
 				2:
 					var radius = 210+(50 if level>=5 else 0)+(70 if actor.stats.bonus("hidden_relic")>0 else 0)
 					for enemy in game.enemies:
-						if enemy.global_position.distance_to(center)<radius: enemy.mark_time = 6+level+(2 if actor.stats.bonus("set_count")>=4 else 0)
+						if enemy.global_position.distance_to(center)<radius: enemy.mark_time = maxf(8,6+level+(2 if actor.stats.bonus("set_count")>=4 else 0))
 					game.fx.sigils(center,radius,Color("#b7eb9a"),level)
 				3:
 					rapid_time = minf(8,2+level)
@@ -291,7 +296,7 @@ func apply_v7_skill(role: int, slot: int, center: Vector2) -> void:
 				for enemy in game.enemies:
 					if is_instance_valid(enemy) and enemy.global_position.distance_to(center)<220+level*45:
 						enemy.hunt_stacks = mini(3,enemy.hunt_stacks+level)
-						enemy.powder_mark = maxf(enemy.powder_mark,7)
+						enemy.powder_mark = maxf(enemy.powder_mark,10)
 		2:
 			if selected==0:
 				game.add_zone(center,190+level*35+actor.stats.bonus("gear_branch_0")*12,0.3,0.55,attack*(0.35+level*0.18),"v7_storm",3+level*2+int(actor.stats.bonus("gear_branch_0")))
@@ -309,11 +314,42 @@ func apply_v7_skill(role: int, slot: int, center: Vector2) -> void:
 
 func combo(pos: Vector2, title: String) -> void:
 	combo_count += 1
+	last_combo_title = title
+	combo_banner_time = 1.15
 	actor.visual.play_gesture("combo",.45)
 	game.profile.unlock("combo")
 	game.fx.combo_burst(pos,actor.stats.role,title)
 	game.sound.play(["combo_sword","combo_gun","combo_bow"][actor.stats.role])
 	game.shake_strength = maxf(game.shake_strength,3.0*game.effects_intensity)
+	game.banner = "连携技 · "+title
+	game.banner_time = maxf(game.banner_time,1.05)
+
+func enemy_timer(property: String) -> float:
+	var remaining=0.0
+	for enemy in game.enemies:
+		if is_instance_valid(enemy) and not enemy.dead:remaining=maxf(remaining,float(enemy.get(property)))
+	return remaining
+
+func combo_status() -> Dictionary:
+	var role=actor.stats.role
+	if combo_banner_time>0:return {"ready":true,"title":last_combo_title,"hint":"已触发","time":combo_banner_time}
+	if ultimate.active and not ultimate.linked:
+		return {"ready":true,"title":["归宗回锋","炼狱装填","逐日终结"][role],"hint":["F 横向剑潮","F 强化持续射击","E 巨箭终结"][role],"time":maxf(0,ultimate.duration-ultimate.elapsed)}
+	if role==0:
+		var sword_time=enemy_timer("sword_mark")
+		if sword_time>0:return {"ready":true,"title":"穿云追剑","hint":"普攻命中剑印","time":sword_time}
+		if windows[1]>0:return {"ready":true,"title":"穿云归宗","hint":"C 接续穿云剑","time":windows[1]}
+		return {"ready":false,"title":"穿云追剑","hint":"Q 施加剑印 → 普攻触发","time":0.0}
+	if role==1:
+		var powder_time=enemy_timer("powder_mark")
+		if powder_time>0:return {"ready":true,"title":"霰幕连爆","hint":"普攻命中火药标记","time":powder_time}
+		if tactical_time>0 and empowered_shots>0:return {"ready":true,"title":"爆燃装填","hint":"强化弹命中火药区","time":tactical_time}
+		return {"ready":false,"title":"霰幕连爆","hint":"Q 施加火药标记 → 普攻触发","time":0.0}
+	var hunt_time=enemy_timer("mark_time")
+	if hunt_time>0:return {"ready":true,"title":"猎日星坠","hint":"E 巨箭命中猎印","time":hunt_time}
+	if game.zones.any(func(zone):return str(zone.get("kind",""))=="arrows"):
+		return {"ready":true,"title":"风雨追猎","hint":"普攻进入箭雨区域","time":0.0}
+	return {"ready":false,"title":"猎日星坠","hint":"F 施加猎印 → E 巨箭触发","time":0.0}
 
 func on_attack() -> void:
 	attacks += 1
@@ -341,9 +377,9 @@ func on_hit(enemy, projectile) -> void:
 		game.player.skills.cooldowns[2] = maxf(0,game.player.skills.cooldowns[2]-0.12*maxi(1,tier(2)))
 	if projectile.source=="cloud":
 		if rank(1)>=8 and enemy.sword_mark>0: game.explode(enemy.global_position,180,attack*0.8,false)
-		enemy.sword_mark = 8
+		enemy.sword_mark = 10
 		if not enemy.is_boss(): enemy.knockback += projectile.direction*170
-	if projectile.source=="shotgun": enemy.powder_mark = 8
+	if projectile.source=="shotgun": enemy.powder_mark = 10
 	if projectile.source=="normal" and role==0 and enemy.sword_mark>0 and combo_cd<=0:
 		enemy.sword_mark = 0
 		combo_cd = 0.2
