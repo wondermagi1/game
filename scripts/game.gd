@@ -236,6 +236,11 @@ func start_run(role: int, seed_value: int = -1, chapter: int = 1) -> void:
 	state = "combat"
 	ui.clear_overlay()
 	rooms.start(chapter,run_seed)
+	if chapter==2 and not profile.data.camp_dialogue.get("chapter2_entered",false):
+		profile.data.camp_dialogue.chapter2_entered = true
+		profile.events.append({"title":"守灯人的委托","text":"查清荒野火种失踪的原因，并留意督军身后的旧门。"})
+		notify_player("砚秋：荒野的灯在熄灭。替我看看督军究竟守着什么。",7)
+		profile.dirty = true
 	profile.save_profile()
 
 func begin_stage() -> void:
@@ -545,6 +550,12 @@ func end_run(victory: bool) -> void:
 	if state!="combat": return
 	collect_loot(true)
 	won = victory
+	if stage==2:
+		var story_key = "chapter2_cleared" if victory else "chapter2_failed"
+		if not profile.data.camp_dialogue.get(story_key,false):
+			profile.data.camp_dialogue[story_key] = true
+			profile.events.append({"title":"荒野回声" if victory else "守灯人的提醒","text":"督军倒下时，战旗指向了裂隙要塞。" if victory else "战旗落下前有一瞬停顿；那是下一次的破绽。"})
+			profile.dirty = true
 	if victory:player.visual.play_gesture("victory",1.8)
 	state = "end"
 	pending.clear()

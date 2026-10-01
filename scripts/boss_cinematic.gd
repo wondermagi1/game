@@ -54,6 +54,10 @@ func start(enemy) -> void:
 	heading = game.ui.label(stage_root,game.Catalog.ENEMIES[enemy.kind],Rect2(190,430,1040,110),78,Color("#efd59d"))
 	subtitle = game.ui.label(stage_root,("温泉主人 / " if enemy.kind==14 else "试炼之敌 / ")+game.flow.title(),Rect2(195,370,880,50),27,Color("#aec5ce"))
 	var intro_text: String = game.Catalog.ENEMY_TEXT[enemy.kind]
+	if game.stage==2 and enemy.kind==7:
+		heading.text = "荒野督军 · 逐火之牙"
+		subtitle.text = preload("res://scripts/v7_catalog.gd").CHAPTER_TWO_ROLE_LINES[game.selected_role]
+		intro_text = "战旗会调动冲锋与远程支援；先破坏号令节奏，再抓住挥旗后的空隙。\n它身后的旧门正向裂隙要塞送出冷风。"
 	if enemy.kind==14:
 		intro_text = "头顶一颗橘子，慢悠悠地守着温泉。\n躲开泡泡和水花，等它泡澡时再反击。\n来一场轻松的切磋吧！"
 	game.ui.label(stage_root,intro_text,Rect2(195,575,825,180),26)

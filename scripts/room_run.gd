@@ -353,6 +353,16 @@ func after_reward() -> void:
 	game.state = "combat"
 	game.ui.clear_overlay()
 	transition_clock = 0.5
+	if current().get("objective","")=="seal" and data.rooms.has("secret") and not data.revealed:
+		data.revealed = true
+		game.profile.data.camp_dialogue.secret = true
+		game.profile.events.append({"title":"隐藏道路 · 镜渊旧印","text":"三处阵眼连成一扇旧门；门后留着指向第三章的裂隙坐标。"})
+		game.profile.dirty = true
+		var player_pos: Vector2 = game.player.global_position
+		enter(str(data.current),str(data.entry))
+		game.player.global_position = player_pos
+		game.notify_player("三阵共鸣：隐藏的镜渊支路已经显现。",6)
+		return
 	game.notify_player("出口已开启。靠近门继续探索；%s 可在安全房间整备。"%game.bindings.text("interact"),5)
 func open_event() -> void:
 	var kind: String = current().event

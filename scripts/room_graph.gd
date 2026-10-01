@@ -36,6 +36,10 @@ static func generate_chapter_two(seed_value: int, rng: RandomNumberGenerator) ->
 	rooms.elite = room("elite",2,1,"elite",2,rng)
 	rooms.elite.reward_hint = "高阶进化 / 稀有装备"
 	rooms.elite.danger = 3
+	rooms.story = room("story",2,0,"event",2,rng)
+	rooms.story.event = "traveler"
+	rooms.story.reward_hint = "章节事件 / 技能领悟"
+	rooms.story.danger = 1
 	rooms.cross = room("cross",3,0,"battle",2,rng)
 	rooms.cross.objective = "defend"
 	rooms.cross.reward_hint = "强化材料 / 防御馈赠"
@@ -55,18 +59,24 @@ static func generate_chapter_two(seed_value: int, rng: RandomNumberGenerator) ->
 	rooms.boss = room("boss",5,0,"boss",2,rng)
 	rooms.boss.reward_hint = "首领宝箱 / 章节解锁"
 	rooms.boss.danger = 4
+	rooms.secret = room("secret",5,1,"secret",2,rng)
+	rooms.secret.reward_hint = "隐藏首领 / 镜渊彩蛋"
+	rooms.secret.danger = 4
 	connect_rooms(rooms,"r0","r1")
 	connect_rooms(rooms,"r1","safe")
 	connect_rooms(rooms,"r1","elite")
+	connect_rooms(rooms,"r1","story")
 	connect_rooms(rooms,"safe","cross")
 	connect_rooms(rooms,"elite","cross")
+	connect_rooms(rooms,"story","cross")
 	connect_rooms(rooms,"cross","shop")
 	connect_rooms(rooms,"cross","hunt")
 	connect_rooms(rooms,"cross","seal")
 	connect_rooms(rooms,"shop","boss")
 	connect_rooms(rooms,"hunt","boss")
 	connect_rooms(rooms,"seal","boss")
-	return {"version":VERSION,"seed":seed_value,"run_id":"%d-%d"%[Time.get_ticks_usec(),seed_value],"chapter":2,"current":"r0","entry":"","rooms":rooms,"revealed":true,"switches":0,"sample":true}
+	connect_rooms(rooms,"seal","secret")
+	return {"version":VERSION,"seed":seed_value,"run_id":"%d-%d"%[Time.get_ticks_usec(),seed_value],"chapter":2,"current":"r0","entry":"","rooms":rooms,"revealed":false,"switches":0,"sample":true}
 static func room(id: String, x: int, y: int, kind: String, chapter: int, rng: RandomNumberGenerator) -> Dictionary:
 	var layout = ["open","pillars","lanes","center","ring"][rng.randi_range(0,4)]
 	if kind in ["start","event","secret"]: layout = "open"

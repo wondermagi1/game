@@ -6,6 +6,8 @@ func show_menu() -> void:
 	super.show_menu()
 	for child in overlay.get_children():
 		if child is Label: child.text = child.text.replace("合刃同行  0.6.2","九流化境  0.7.0")
+	box(overlay,Rect2(1050,805,715,75),Color("#10232d"),Color("#6d8d86"))
+	label(overlay,V7.CAMP_NPC+"："+camp_story_line(),Rect2(1070,815,675,55),17,Color("#c8e5d9"))
 
 func _process(delta: float) -> void:
 	super._process(delta)
@@ -82,7 +84,19 @@ func show_pause(stats_view: bool = false) -> void:
 
 func show_end(victory: bool) -> void:
 	super.show_end(victory)
+	if game.stage==2:
+		for child in overlay.get_children():
+			if child is Label and child.position.y==215:
+				child.text = (V7.CHAPTER_TWO_ROLE_LINES[game.selected_role]+"  督军倒下时，战旗指向裂隙要塞。") if victory else "砚秋：记住战旗抬起后的停顿。火种会等你再来。"
 	button(overlay,"查看详细战报",Rect2(760,795,400,55),show_run_report,Color("#85cfc2"))
+
+func camp_story_line() -> String:
+	var flags: Dictionary = game.profile.data.camp_dialogue
+	if flags.get("secret",false): return V7.CAMP_LINES.secret
+	if flags.get("chapter2_cleared",false): return V7.CAMP_LINES.cleared
+	if flags.get("chapter2_failed",false): return V7.CAMP_LINES.failed
+	if flags.get("chapter2_entered",false): return V7.CAMP_LINES.entered
+	return V7.CAMP_LINES.new
 
 func show_run_report() -> void:
 	page_start("本局战报 · 构筑复盘","伤害占比、路线和选择记录只用于帮助判断构筑，不影响掉落。","run_report")

@@ -36,7 +36,8 @@ func run() -> void:
 	var chapter_two = Graph.generate(2,70702)
 	check(Graph.reachable(chapter_two),"chapter two sample graph is fully reachable")
 	check(chapter_two.get("sample",false),"chapter two uses authored sample route")
-	check(chapter_two.rooms.r1.neighbors.size()==3,"first battle presents safe and elite route choices")
+	check(chapter_two.rooms.has("story") and chapter_two.rooms.has("secret") and not chapter_two.revealed,"chapter two includes a story room and hidden unrevealed route")
+	check(chapter_two.rooms.r1.neighbors.has("safe") and chapter_two.rooms.r1.neighbors.has("elite") and chapter_two.rooms.r1.neighbors.has("story"),"first battle presents safe, elite and story route choices")
 	check(chapter_two.rooms.cross.neighbors.has("shop") and chapter_two.rooms.cross.neighbors.has("hunt") and chapter_two.rooms.cross.neighbors.has("seal"),"second fork presents shop, hunt and seal")
 	check(chapter_two.rooms.cross.objective=="defend" and chapter_two.rooms.hunt.objective=="hunt" and chapter_two.rooms.seal.objective=="seal","sample route assigns all objective rooms")
 	for id in chapter_two.rooms:
@@ -66,6 +67,7 @@ func run() -> void:
 	game.profile.data.roles[0].skills = [10,10,10,10]
 	game.start_run(0,70703,2)
 	await process_frame
+	check(game.profile.data.camp_dialogue.get("chapter2_entered",false),"first chapter two entry records camp dialogue")
 	var skills = game.player.skills
 	check(skills.rerolls==2 and skills.evolutions.is_empty(),"new run starts with two rerolls and no locked path")
 	var choices = skills.evolution_choices(game.rng)
@@ -102,6 +104,8 @@ func run() -> void:
 		game.rooms.tick(1.7)
 	game.rooms.tick(0.1)
 	check(game.rooms.current().cleared and game.state=="reward","capturing all seal points completes the room")
+	game.choose_reward(0)
+	check(game.rooms.data.revealed and game.profile.data.camp_dialogue.get("secret",false) and game.state=="combat","seal reward reveals the hidden chapter route")
 
 	game.telemetry.record_damage(120,"skill_3",true)
 	game.telemetry.damage_taken += 20

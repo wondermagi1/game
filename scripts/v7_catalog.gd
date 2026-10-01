@@ -92,6 +92,20 @@ const GEAR_MECHANICS = [
 	]
 ]
 
+const CAMP_NPC = "守灯人 · 砚秋"
+const CAMP_LINES = {
+	"new":"荒野的灯一盏盏熄了。去第二章时，替我看看是谁在收走火种。",
+	"entered":"督军并非只在掠夺。他守着一扇朝地下吹风的旧门。",
+	"failed":"败退并不可耻。记住它抬起战旗后的停顿，那就是下一次的破绽。",
+	"cleared":"荒野重新亮了，但裂隙深处传来的风更冷了。第三章会给你答案。",
+	"secret":"你找到了镜渊留下的旧印。有人在六座试炼之外，记录我们的每一次选择。"
+}
+const CHAPTER_TWO_ROLE_LINES = [
+	"剑修：你的战旗压不住我的剑阵。",
+	"火枪手：站稳了，下一声枪响会穿过你的号令。",
+	"游侠：你守着路口，我会从风里找到另一条路。"
+]
+
 static func gear_mechanic(role: int, branch_index: int) -> Dictionary:
 	return GEAR_MECHANICS[clampi(role,0,2)][clampi(branch_index,0,2)]
 
