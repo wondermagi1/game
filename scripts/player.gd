@@ -141,6 +141,7 @@ func _physics_process(delta: float) -> void:
 
 func dash(movement: Vector2) -> bool:
 	if dash_clock > 0: return false
+	game.telemetry.dodges += 1
 	dash_direction = movement.normalized() if movement.length()>0 else aim
 	visual.dash_trail = .25
 	visual.play_gesture("dash",dash_duration)
@@ -226,6 +227,7 @@ func hurt(raw: float) -> void:
 	hp -= amount
 	game.taken += amount
 	game.telemetry.damage_taken += amount
+	game.telemetry.failure_reason = "受到近身攻击或弹幕命中"
 	game.sound.play("hurt")
 	game.fx.number(global_position,amount,Color("#ff8090"))
 	visual.flash = 0.18

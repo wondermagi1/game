@@ -80,9 +80,21 @@ func run() -> void:
 	check(not skills.apply_evolution(V7.evolution_id(0,0,1,3)),"maximum tier cannot be repeated")
 	check(skills.build_name()==V7.BUILD_NAMES[0][1],"dominant branch determines build name")
 	check(not skills.build_tags().is_empty(),"formed build exposes tags")
+	var aligned = skills.align_rewards(game.player.stats.reward_choices(game.rng,game.player.hp,false),game.rng)
+	check(aligned.any(func(choice): return skills.reward_branch(str(choice[3]))==1),"reward protection offers at least one current-build option")
 	var enhanced = skills.enhance_rewards(game.player.stats.reward_choices(game.rng,game.player.hp,false),game.rng,true)
 	check(enhanced.size()==3 and enhanced.count(enhanced[0])>=1,"forced reward keeps three-card contract")
 	check(enhanced.filter(func(c): return c[3]=="evolution").size()>=1,"elite reward protects an evolution choice")
+	var dodges_before = game.telemetry.dodges
+	check(game.player.dash(Vector2.RIGHT) and game.telemetry.dodges==dodges_before+1,"successful dash is counted once")
+	var armored = game.spawn_enemy(3,game.random_spawn(),true)
+	armored.state = "move"
+	armored.elite_modifiers.clear()
+	armored.elite_modifiers.append("armored")
+	armored.ward = 1
+	armored.armor = 24
+	armored.hurt(12,false,true,"v7_greatsword")
+	check(armored.armored_broken and armored.hit_stop>0,"armored elite breaks and heavy hit applies short hit stop")
 
 	game.rooms.enter("cross","r1")
 	check(game.rooms.objective_state.id=="defend" and game.rooms.objective_text().contains("灵石坚守"),"defend objective starts with visible status")
@@ -111,7 +123,7 @@ func run() -> void:
 	game.telemetry.damage_taken += 20
 	game.telemetry.healing += 8
 	var telemetry_copy = game.telemetry.snapshot()
-	check(game.telemetry.damage_lines(3).size()>=1 and game.telemetry.critical_hits>=1,"telemetry summarizes damage and critical hits")
+	check(game.telemetry.damage_lines(3).size()>=1 and game.telemetry.critical_hits>=1 and game.telemetry.highest_hit>=120,"telemetry summarizes damage, critical hits and highest hit")
 	game.telemetry.reset()
 	game.telemetry.restore(telemetry_copy)
 	check(game.telemetry.damage_taken>=20 and game.telemetry.healing>=8 and game.telemetry.rooms.size()>=3,"telemetry snapshot restores route and survival data")

@@ -1,6 +1,7 @@
 extends RefCounted
 const C = preload("res://scripts/catalog.gd")
 const V7 = preload("res://scripts/v7_catalog.gd")
+const Data = preload("res://scripts/data.gd")
 var actor
 var game
 var cooldowns: Array[float] = [0,0,0,0]
@@ -86,13 +87,34 @@ func evolution_choices(rng: RandomNumberGenerator) -> Array:
 
 func enhance_rewards(base_choices: Array, rng: RandomNumberGenerator, force: bool = false) -> Array:
 	reward_count += 1
-	var choices = base_choices.duplicate(true)
+	var choices = align_rewards(base_choices.duplicate(true),rng)
 	var evolution_pool = evolution_choices(rng)
 	if not evolution_pool.is_empty() and (force or reward_count%2==1):
 		choices[0] = evolution_pool[0]
 		# Elite/secret/Boss rewards show a second compatible evolution when possible.
 		if force and evolution_pool.size()>1: choices[1] = evolution_pool[1]
 	return choices
+
+func align_rewards(choices: Array, rng: RandomNumberGenerator) -> Array:
+	var selected = dominant_branch()
+	if selected<0: return choices
+	for choice in choices:
+		if reward_branch(str(choice[3]))==selected: return choices
+	var pool: Array = []
+	for upgrade in Data.UPGRADES:
+		if actor.stats.eligible(upgrade) and reward_branch(str(upgrade[3]))==selected and not choices.any(func(choice): return choice[0]==upgrade[0]): pool.append(upgrade)
+	if not pool.is_empty(): choices[choices.size()-1] = pool[rng.randi_range(0,pool.size()-1)]
+	return choices
+
+func reward_branch(key: String) -> int:
+	var maps = [
+		[["orbit","multishot","cooldown","shield"],["attack","attack_pct","crit_damage","armor"],["return","pierce","speed_pct","dash_cooldown"]],
+		[["rate_pct","burn","reload","magazine"],["blast","attack","attack_pct","pierce"],["crit","crit_damage","range_pct","projectile_pct"]],
+		[["cooldown","speed_pct","multishot","kill_speed"],["range_pct","projectile_pct","crit_damage","pierce"],["bounce","dash_cooldown","crit","kill_rate"]]
+	]
+	for branch_index in range(3):
+		if key in maps[actor.stats.role][branch_index]: return branch_index
+	return -1
 
 func apply_evolution(id: String) -> bool:
 	var parsed = V7.parse_id(id)

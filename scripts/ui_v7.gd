@@ -6,13 +6,15 @@ func show_menu() -> void:
 	super.show_menu()
 	for child in overlay.get_children():
 		if child is Label: child.text = child.text.replace("合刃同行  0.6.2","九流化境  0.7.0")
-	box(overlay,Rect2(1050,805,715,75),Color("#10232d"),Color("#6d8d86"))
-	label(overlay,V7.CAMP_NPC+"："+camp_story_line(),Rect2(1070,815,675,55),17,Color("#c8e5d9"))
+	box(overlay,Rect2(1050,120,715,70),Color("#10232d"),Color("#6d8d86"))
+	label(overlay,V7.CAMP_NPC+"："+camp_story_line(),Rect2(1070,130,675,50),17,Color("#c8e5d9"))
 
 func _process(delta: float) -> void:
 	super._process(delta)
 	if game.state=="combat" and game.rooms.active and not game.rooms.objective_state.is_empty() and not game.rooms.objective_state.get("done",false):
 		detail_label.text += "  ·  "+game.rooms.objective_text()
+	if game.state=="combat" and is_instance_valid(game.player) and game.selected_role==1 and game.player.skills.dominant_branch()==0:
+		detail_label.text += "  ·  热量 %d%%"%roundi(game.player.skills.heat)
 
 func show_rewards(choices: Array) -> void:
 	var has_evolution = choices.any(func(choice): return choice[3]=="evolution")
@@ -99,6 +101,8 @@ func camp_story_line() -> String:
 	return V7.CAMP_LINES.new
 
 func show_run_report() -> void:
+	game.notice_clock = 0
+	if is_instance_valid(notification): notification.hide()
 	page_start("本局战报 · 构筑复盘","伤害占比、路线和选择记录只用于帮助判断构筑，不影响掉落。","run_report")
 	var t = game.telemetry
 	var damage_lines = t.damage_lines(7)
@@ -115,14 +119,14 @@ func show_run_report() -> void:
 	box(overlay,Rect2(1260,300,535,570),INK,Color("#806653"))
 	label(overlay,"伤害构成",Rect2(155,330,460,48),31,Color("#91ddcf"))
 	label(overlay,"\n".join(damage_lines) if not damage_lines.is_empty() else "尚无有效伤害记录",Rect2(155,400,460,350),23)
-	label(overlay,"命中 %d · 暴击 %d\n承伤 %.0f · 治疗 %.0f"%[t.hits,t.critical_hits,t.damage_taken,t.healing],Rect2(155,750,460,85),21,GOLD)
+	label(overlay,"命中 %d · 暴击 %d · 最高 %.0f\n闪避 %d · 承伤 %.0f · 治疗 %.0f"%[t.hits,t.critical_hits,t.highest_hit,t.dodges,t.damage_taken,t.healing],Rect2(155,750,460,85),20,GOLD)
 	label(overlay,"敌群与路线",Rect2(725,330,460,48),31,Color("#c5a8ed"))
 	label(overlay,"精英击破 %d · 首领击破 %d\n\n%s"%[t.elite_kills,t.boss_kills,"\n".join(enemy_lines.slice(0,9)) if not enemy_lines.is_empty() else "尚无击破记录"],Rect2(725,400,460,310),22)
 	label(overlay,"路线：%s"%(" → ".join(route_names) if not route_names.is_empty() else "传统关卡"),Rect2(725,735,460,100),20,GOLD)
 	label(overlay,"构筑与收益",Rect2(1295,330,460,48),31,Color("#efc67b"))
 	var reward_text = "\n".join(t.rewards.slice(-10)) if not t.rewards.is_empty() else "尚未选择局内奖励"
 	label(overlay,"%s\n%s\n\n%s"%[game.player.skills.build_name() if is_instance_valid(game.player) else "未成型",(" / ".join(game.player.skills.build_tags()) if is_instance_valid(game.player) and not game.player.skills.build_tags().is_empty() else "无构筑标签"),reward_text],Rect2(1295,400,460,330),22)
-	label(overlay,"重抽 %d · 装备 %d\n%s"%[t.rerolls,t.gear_found,report_advice()],Rect2(1295,750,460,90),20,GOLD)
+	label(overlay,"重抽 %d · 装备 %d\n%s\n%s"%[t.rerolls,t.gear_found,"失败原因："+t.failure_reason if not game.won and not t.failure_reason.is_empty() else "",report_advice()],Rect2(1295,735,460,115),19,GOLD)
 	button(overlay,"返回结算",Rect2(620,930,680,62),show_end.bind(game.won))
 
 func report_advice() -> String:

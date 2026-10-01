@@ -14,6 +14,9 @@ var elite_kills := 0
 var boss_kills := 0
 var rerolls := 0
 var gear_found := 0
+var highest_hit := 0.0
+var dodges := 0
+var failure_reason := ""
 
 func reset() -> void:
 	damage_by_source.clear()
@@ -28,11 +31,15 @@ func reset() -> void:
 	boss_kills = 0
 	rerolls = 0
 	gear_found = 0
+	highest_hit = 0
+	dodges = 0
+	failure_reason = ""
 
 func record_damage(amount: float, source: String, critical: bool = false) -> void:
 	if amount<=0: return
 	var key = source if not source.is_empty() else "其他伤害"
 	damage_by_source[key] = float(damage_by_source.get(key,0))+amount
+	highest_hit = maxf(highest_hit,amount)
 	hits += 1
 	if critical: critical_hits += 1
 
@@ -64,11 +71,11 @@ func damage_lines(limit: int = 6) -> Array[String]:
 	return lines
 
 func source_name(source: String) -> String:
-	var names = {"normal":"普通攻击","status":"持续伤害","explosion":"范围爆炸","skill_0":"技能 E","skill_1":"技能 Q","skill_2":"技能 F","skill_3":"终极技能 C","skill":"技能伤害"}
+	var names = {"normal":"普通攻击","status":"持续伤害","explosion":"范围爆炸","skill_0":"技能 E","skill_1":"技能 Q","skill_2":"技能 F","skill_3":"终极技能 C","skill":"技能伤害","v7_array":"进化 · 剑阵","v7_greatsword":"进化 · 山河巨刃","v7_return":"进化 · 回锋剑河","v7_fire":"进化 · 炽焰","v7_giant_arrow":"进化 · 破界巨箭","v7_storm":"进化 · 风暴箭雨","v7_trap":"进化 · 星罗机关"}
 	return names.get(source,source)
 
 func snapshot() -> Dictionary:
-	return {"damage_by_source":damage_by_source.duplicate(true),"kills_by_kind":kills_by_kind.duplicate(true),"rewards":rewards.duplicate(),"rooms":rooms.duplicate(),"damage_taken":damage_taken,"healing":healing,"critical_hits":critical_hits,"hits":hits,"elite_kills":elite_kills,"boss_kills":boss_kills,"rerolls":rerolls,"gear_found":gear_found}
+	return {"damage_by_source":damage_by_source.duplicate(true),"kills_by_kind":kills_by_kind.duplicate(true),"rewards":rewards.duplicate(),"rooms":rooms.duplicate(),"damage_taken":damage_taken,"healing":healing,"critical_hits":critical_hits,"hits":hits,"elite_kills":elite_kills,"boss_kills":boss_kills,"rerolls":rerolls,"gear_found":gear_found,"highest_hit":highest_hit,"dodges":dodges,"failure_reason":failure_reason}
 
 func restore(data: Dictionary) -> void:
 	reset()
@@ -76,5 +83,5 @@ func restore(data: Dictionary) -> void:
 	kills_by_kind = data.get("kills_by_kind",{}).duplicate(true)
 	rewards.assign(data.get("rewards",[]))
 	rooms.assign(data.get("rooms",[]))
-	for key in ["damage_taken","healing","critical_hits","hits","elite_kills","boss_kills","rerolls","gear_found"]:
+	for key in ["damage_taken","healing","critical_hits","hits","elite_kills","boss_kills","rerolls","gear_found","highest_hit","dodges","failure_reason"]:
 		set(key,data.get(key,get(key)))

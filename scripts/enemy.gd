@@ -41,6 +41,8 @@ var drain_clock: float = 0.0
 var hunt_stacks: int = 0
 var summoned_copy: bool = false
 var last_source: String = ""
+var hit_stop: float = 0.0
+var armored_broken: bool = false
 
 func is_boss() -> bool:
 	return kind in [4,5,6,7,8,12,13,14]
@@ -96,7 +98,12 @@ func _physics_process(delta: float) -> void:
 		if timer <= 0:
 			state = "move"
 			visual.modulate.a = 1
-		queue_redraw()
+			queue_redraw()
+		return
+	if hit_stop>0:
+		hit_stop = maxf(0,hit_stop-delta)
+		velocity = Vector2.ZERO
+		visual.walking = 0
 		return
 	blast_mark = maxf(0,blast_mark-delta)
 	slow_time = maxf(0,slow_time-delta)
@@ -338,6 +345,7 @@ func modifier_tick(delta: float) -> void:
 
 func hurt(raw: float, critical: bool = false, apply_status: bool = true, source: String = "skill") -> void:
 	if dead or state == "spawn" or game.state != "combat": return
+	var ward_before = ward
 	var amount = clampf(raw*100.0/(100.0+armor),1.0,1.0e15)
 	var absorbed = minf(ward,amount)
 	ward -= absorbed
@@ -346,6 +354,16 @@ func hurt(raw: float, critical: bool = false, apply_status: bool = true, source:
 	last_source = "status" if not apply_status else source
 	game.dealt += minf(amount,maxf(0,hp+amount))
 	game.telemetry.record_damage(minf(amount,maxf(0,hp+amount)),"status" if not apply_status else source,critical)
+	var heavy = source in ["cloud","v7_greatsword","v7_giant_arrow","bomb","skill_3"] or raw>=game.player.stats.value("attack")*3.0
+	if heavy:
+		hit_stop = maxf(hit_stop,0.035 if is_boss() else 0.065)
+		game.shake_strength = maxf(game.shake_strength,(2.5 if is_boss() else 4.0)*game.effects_intensity)
+	if ward_before>0 and ward<=0 and elite_modifiers.has("armored") and not armored_broken:
+		armored_broken = true
+		armor = maxf(0,armor-24)
+		hit_stop = maxf(hit_stop,0.10)
+		game.fx.caption(global_position-Vector2(28,radius+45),"破甲",Color("#bde8ff"))
+		game.fx.ring(global_position,radius+24,Color("#86cdec"))
 	game.fx.number(global_position,amount,Color("#ffe0a4") if critical else Color("#e7f1fa"),critical)
 	visual.flash = 0.09
 	if apply_status:
@@ -445,3 +463,4 @@ func _draw() -> void:
 		if matches.is_empty(): continue
 		var definition: Dictionary = matches[0]
 		draw_circle(Vector2(-12*(elite_modifiers.size()-1)+i*24,-radius-43),8,Color(definition.color))
+		draw_string(ThemeDB.fallback_font,Vector2(-10*(elite_modifiers.size()-1)+i*34,-radius-54),str(definition.name).left(1),HORIZONTAL_ALIGNMENT_CENTER,20,13,Color.WHITE)
