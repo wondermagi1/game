@@ -10,6 +10,8 @@ func show_action_inspector() -> void:
 	overlay.add_child(panel);panel.closed.connect(show_menu)
 func show_visual_settings(in_run: bool) -> void:
 	super.show_visual_settings(in_run)
+	var mode="开启" if game.use_3d_characters else "关闭"
+	button(overlay,"剑修 3D 角色样板："+mode,Rect2(1050,820,680,65),func():game.set_3d_characters(not game.use_3d_characters);show_visual_settings(in_run))
 	button(overlay,"窗口分辨率 →",Rect2(1050,900,680,65),show_resolution_settings.bind(in_run))
 
 func show_resolution_settings(in_run: bool) -> void:
