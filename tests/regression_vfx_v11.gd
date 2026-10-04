@@ -17,6 +17,8 @@ func run()->void:
 	check(ResourceLoader.exists("res://art/v11/impact_distortion.gdshader"),"local distortion shader exists")
 	check(ResourceLoader.exists("res://art/v11/radial_light.svg"),"radial light texture exists")
 	game=load("res://scenes/Main.tscn").instantiate();game.test_mode=true;root.add_child(game);game.sound.volume=0
+	game.screen_fx.distortion._process(.01)
+	check(not game.screen_fx.distortion.visible,"pooled distortion stays dormant before its first shader setup")
 	game.profile.data.unlocked=6;game.effects_intensity=1.0
 	for role in range(3):
 		game.profile.data.checkpoint={};game.profile.data.exploration={}

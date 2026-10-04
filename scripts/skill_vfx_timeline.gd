@@ -38,7 +38,7 @@ func combo(pos: Vector2, role: int, title: String) -> void:
 	game.presentation_fx.emit("v11_combo",pos,Vector2.UP,role,2.2)
 	game.screen_fx.combo(pos,role)
 
-func heavy_hit(pos: Vector2, source: String, power: float) -> void:
+func heavy_hit(pos: Vector2, _source: String, power: float) -> void:
 	if heavy_hit_cooldown>0 or not is_instance_valid(game.player):return
 	heavy_hit_cooldown=.065
 	var role: int=game.player.stats.role

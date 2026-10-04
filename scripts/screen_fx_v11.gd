@@ -26,9 +26,8 @@ func _ready() -> void:
 		add_child(light)
 		light_pool.append(light)
 	distortion = preload("res://scripts/impact_distortion_v11.gd").new()
-	distortion.visible = false
-	distortion.set_process(false)
 	add_child(distortion)
+	distortion.reset()
 
 func gather(pos: Vector2, role: int, power: float) -> void:
 	add_pulse(pos,role,80+power*18,.38,"gather")

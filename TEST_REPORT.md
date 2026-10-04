@@ -4,7 +4,7 @@
 
 | 检查 | 断言数 | 结果 |
 |---|---:|---|
-| regression_vfx_v11 | 49 | 通过 |
+| regression_vfx_v11 | 50 | 通过 |
 | regression_visual_v8 | 23 | 通过 |
 | regression_motion_v8 | 57 | 通过 |
 | regression_action_v9 | 160 | 通过 |
