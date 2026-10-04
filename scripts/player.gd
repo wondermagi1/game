@@ -1,7 +1,6 @@
 extends CharacterBody2D
 const Stats = preload("res://scripts/stats.gd")
 const Visual = preload("res://scripts/actor_visual.gd")
-const SwordVisual3D = preload("res://scripts/character_3d_sword.gd")
 const Skills = preload("res://scripts/skill_controller.gd")
 const Catalog = preload("res://scripts/catalog.gd")
 var skills
@@ -13,7 +12,6 @@ var game
 var stats
 var hp: float = 100.0
 var visual
-var visual_3d
 var aim = Vector2.RIGHT
 var attack_clock: float = 0.0
 var skill_clock: float:
@@ -73,21 +71,9 @@ func _ready() -> void:
 	add_child(visual)
 	var equipped: Dictionary = game.profile.item_by_id(game.profile.data.roles[stats.role].equipped.get("0",""))
 	visual.quality = int(equipped.get("quality",0))
-	visual_3d = SwordVisual3D.new()
-	visual_3d.name = "SwordVisual3D"
-	visual_3d.role = stats.role
-	visual_3d.state_source = visual
-	add_child(visual_3d)
-	apply_visual_mode()
 	hp = stats.value("hp")
 	ammo = magazine_size()
 	z_index = 5
-
-func apply_visual_mode() -> void:
-	if not is_instance_valid(visual):return
-	var use_sample: bool=game!=null and game.use_3d_characters and stats.role==0
-	visual.visible=not use_sample
-	if is_instance_valid(visual_3d):visual_3d.set_enabled(use_sample)
 
 func magazine_size() -> int:
 	return mini(30,6+int(stats.bonus("magazine")))

@@ -22,7 +22,6 @@ var cinematic
 var reduced_motion: bool = false
 var menu_parallax: bool = true
 var skip_boss_intro: bool = true
-var use_3d_characters: bool = true
 var bindings = preload("res://scripts/input_bindings.gd").new()
 var abyss = preload("res://scripts/abyss_run.gd").new()
 var encounter = preload("res://scripts/encounter_rules.gd").new()
@@ -91,11 +90,6 @@ func apply_window_resolution() -> void:
 	window.size=window_resolution
 	var desktop=DisplayServer.screen_get_usable_rect(window.current_screen)
 	window.position=desktop.position+Vector2i(maxi(0,(desktop.size.x-window_resolution.x)/2),maxi(0,(desktop.size.y-window_resolution.y)/2))
-
-func set_3d_characters(value: bool) -> void:
-	use_3d_characters=value
-	if is_instance_valid(player) and player.has_method("apply_visual_mode"):player.apply_visual_mode()
-	save_settings()
 
 func _ready() -> void:
 	get_window().title = "三途试炼 · 灵境重铸 " + str(ProjectSettings.get_setting("application/config/version"))
@@ -634,7 +628,7 @@ func save_settings() -> void:
 	config.set_value("settings","numbers",show_numbers)
 	config.set_value("settings","effects",effects_intensity)
 	config.set_value("display","resolution",window_resolution)
-	for key in ["reduced_motion","menu_parallax","skip_boss_intro","use_3d_characters"]: config.set_value("presentation",key,get(key))
+	for key in ["reduced_motion","menu_parallax","skip_boss_intro"]: config.set_value("presentation",key,get(key))
 	config.set_value("presentation","seen_bosses",cinematic.seen)
 	config.save("user://settings.cfg")
 
@@ -648,7 +642,7 @@ func load_settings() -> void:
 		screen_shake = config.get_value("settings","shake",true)
 		show_numbers = config.get_value("settings","numbers",true)
 		effects_intensity = clampf(float(config.get_value("settings","effects",1.0)),0.2,1.0)
-		for key in ["reduced_motion","menu_parallax","skip_boss_intro","use_3d_characters"]: set(key,bool(config.get_value("presentation",key,get(key))))
+		for key in ["reduced_motion","menu_parallax","skip_boss_intro"]: set(key,bool(config.get_value("presentation",key,get(key))))
 		var seen_value = config.get_value("presentation","seen_bosses",{})
 		if seen_value is Dictionary: cinematic.seen = seen_value
 		var saved_resolution=config.get_value("display","resolution",Vector2i(1920,1080))
