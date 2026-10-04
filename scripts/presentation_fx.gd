@@ -14,12 +14,13 @@ func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float =
 	if role==1 and kind in ["impact","explosion"]:return
 	var key = kind+str(role)
 	if cooldowns.get(key,0)>0: return
-	cooldowns[key] = .10 if kind=="shot" else (.04 if role==1 else (.15 if kind=="explosion" else .06))
+	cooldowns[key] = .10 if kind=="shot" else (.10 if kind=="v11_sustain" else (.04 if role==1 else (.15 if kind=="explosion" else .06)))
 	materials.emit(kind,pos,dir,role,strength,game.effects_intensity)
 	# Existing explosion rings/sparks already cover secondary debris. Avoid duplicating
 	# their full particle burst for every chained hit at deep-abyss stack counts.
 	if kind=="explosion":return
-	var count = int((10 if kind=="shot" else 38)*game.effects_intensity)
+	var base_count=10 if kind=="shot" else (18 if kind.begins_with("v11_") else 38)
+	var count = int(base_count*game.effects_intensity)
 	var color: Color = preload("res://scripts/presentation.gd").ROLES[clampi(role,0,2)].color
 	for i in range(mini(count,420-particles.size())):
 		var heading = dir.rotated(rng.randf_range(-.4,.4)) if kind=="shot" else Vector2.from_angle(rng.randf()*TAU)

@@ -14,6 +14,7 @@ var empowered: bool = false
 var linked: bool = false
 var secondary: bool = false
 var total_budget: float = 0
+var released: bool = false
 func start(point: Vector2) -> void:
 	role = skills.actor.stats.role
 	rank = skills.rank(3)
@@ -23,6 +24,7 @@ func start(point: Vector2) -> void:
 	ticks = 0
 	linked = false
 	secondary = false
+	released = false
 	center = point
 	limit = (8+floori((rank-1)*4.0/9)) if role==0 else ((24+rank*2) if role==1 else (10+rank))
 	duration = 3.35 if role==0 else (4.35+(rank-1)*0.15)
@@ -36,6 +38,7 @@ func start(point: Vector2) -> void:
 		game.art.emit("gather",center,actor.aim,radius(),0.6,role)
 	game.art.emit(["sword_halo","gun_heat","bow_constellation"][role],actor.global_position,actor.aim,190,1.05,role)
 	game.presentation_fx.emit("v8_gather",actor.global_position+actor.visual.muzzle_local(),actor.aim,role,2.4)
+	game.vfx_timeline.begin_ultimate(actor.global_position+actor.visual.muzzle_local(),center,actor.aim,role,rank,duration)
 	game.sound.play("ultimate_%d_start"%role)
 	game.fx.caption(actor.global_position-Vector2(80,100),["万剑归宗","炼狱火力","群星逐猎"][role],game.art.PALETTE[role])
 	if role==2:
@@ -69,6 +72,9 @@ func tick(delta: float) -> void:
 	var game = skills.game
 	var actor = skills.actor
 	elapsed += delta
+	if not released and elapsed>=.22:
+		released=true
+		game.vfx_timeline.release_ultimate(actor.global_position+actor.visual.muzzle_local(),actor.aim,role,rank)
 	if elapsed>.6 and actor.visual.clip not in ["ultimate_sustain","combo","dash","hurt"]: actor.visual.play_gesture("ultimate_sustain",duration)
 	if elapsed>=next_tick and ticks<limit:
 		next_tick += (duration-0.35)/limit
@@ -95,6 +101,7 @@ func tick(delta: float) -> void:
 			if rank>=5 and ticks%4==0: skills.shot(dir.rotated(0.12),factor*0.5,2,"guardian",{"body_length":65.0,"hit_width":7.0})
 		if ticks%maxi(1,limit/6)==0:
 			game.presentation_fx.emit("v8_sustain",center,actor.aim,role,1.5+rank*.06)
+			game.vfx_timeline.sustain_ultimate(center,actor.aim,role,rank)
 		ticks += 1
 	if elapsed>=duration+0.15: finish()
 func strike(factor: float, kind: String) -> void:
@@ -108,6 +115,7 @@ func strike(factor: float, kind: String) -> void:
 			game.art.emit("fall",center+offset,Vector2.DOWN,135+(rank*4),0.35,0)
 		game.sound.play("ultimate_0_loop")
 		game.presentation_fx.emit("v8_impact",center,Vector2.DOWN,0,1.5+rank*.08)
+		game.vfx_timeline.impact_ultimate(center,0,rank,false)
 		for enemy in game.enemies:
 			if not enemy.is_boss() and enemy.global_position.distance_to(center)<radius(): enemy.slow_time = maxf(enemy.slow_time,0.4)
 func finish() -> void:
@@ -125,9 +133,10 @@ func finish() -> void:
 	game.fx.burst(center,game.art.PALETTE[role],60)
 	game.presentation_fx.emit("ultimate",center,actor.aim,role,4)
 	game.presentation_fx.emit("v8_finish",center,actor.aim,role,3.4+rank*.12)
+	game.vfx_timeline.finish_ultimate(center,actor.aim,role,rank,radius()+70)
 	game.art.emit("residue",center,actor.aim,radius()+70,1.1,role)
 	game.sound.play("ultimate_%d_finish"%role)
-	game.shake_strength = 6*game.effects_intensity
+	game.shake_strength = maxf(game.shake_strength,6*game.effects_intensity)
 	if rank>=5 and role==0:
 		game.art.emit("slash",center,Vector2.RIGHT,300,0.45,role)
 	if rank>=10:

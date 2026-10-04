@@ -358,13 +358,14 @@ func hurt(raw: float, critical: bool = false, apply_status: bool = true, source:
 	if heavy:
 		hit_stop = maxf(hit_stop,0.035 if is_boss() else 0.065)
 		game.shake_strength = maxf(game.shake_strength,(2.5 if is_boss() else 4.0)*game.effects_intensity)
+		if "vfx_timeline" in game and game.vfx_timeline!=null:game.vfx_timeline.heavy_hit(global_position,source,raw/maxf(1.0,game.player.stats.value("attack")))
 	if ward_before>0 and ward<=0 and elite_modifiers.has("armored") and not armored_broken:
 		armored_broken = true
 		armor = maxf(0,armor-24)
 		hit_stop = maxf(hit_stop,0.10)
 		game.fx.caption(global_position-Vector2(28,radius+45),"破甲",Color("#bde8ff"))
 		game.fx.ring(global_position,radius+24,Color("#86cdec"))
-	game.fx.number(global_position,amount,Color("#ffe0a4") if critical else Color("#e7f1fa"),critical)
+	game.fx.number(global_position,amount,Color("#ffe0a4") if critical else Color("#e7f1fa"),critical,.07 if heavy else 0.0)
 	visual.flash = 0.09
 	if apply_status:
 		knockback = game.player.global_position.direction_to(global_position)*(45 if is_boss() else 120)

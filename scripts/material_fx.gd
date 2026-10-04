@@ -16,10 +16,42 @@ func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float, 
 	# Gunner uses V5 flashes/rings again, also in the action inspector.
 	# V8 ultimate layers are additive visuals and intentionally keep the accepted
 	# V5 gun/bow audio and ordinary attack presentation unchanged.
-	if role==1 and not kind.begins_with("v8_"):return
+	if role==1 and not (kind.begins_with("v8_") or kind.begins_with("v11_")):return
 	var cap=24 if quality<.5 else (48 if quality<.8 else 80)
 	var color=[Color("#99f7ef"),Color("#ffb269"),Color("#a5e9bc")][clampi(role,0,2)]
-	if kind=="v8_gather":
+	if kind=="v11_anticipation":
+		var size=clampf(strength*42,70,150)
+		add("magic",pos,Vector2.ZERO,Vector2.ONE*size,.38,Color(color,.48),dir.angle(),cap)
+		add("light",pos,Vector2.ZERO,Vector2.ONE*size*1.22,.20,Color(color,.34),0,cap)
+		for i in range(2 if quality<.5 else 5):
+			var angle=dir.angle()+PI+(i-2)*.42
+			add("spark",pos+Vector2.from_angle(angle)*size*.65,Vector2.from_angle(angle+PI)*90,Vector2(12,size*.42),.34,Color(color,.72),angle+PI*.5,cap)
+	elif kind=="v11_release":
+		var size=clampf(strength*40,76,165)
+		add("light",pos,Vector2.ZERO,Vector2.ONE*size*1.35,.16,Color(color,.55),0,cap)
+		if role==1:
+			add("flame",pos+dir*22,dir*85,Vector2(size*.42,size),.22,Color("#fff1b0"),dir.angle()+PI*.5,cap)
+			add("smoke",pos-dir*12,Vector2(0,-38),Vector2.ONE*size*.52,.60,Color(.34,.36,.39,.30),0,cap)
+		else:add("magic",pos+dir*28,dir*80,Vector2(size*1.15,size*.44),.24,Color(color,.72),dir.angle(),cap)
+		for i in range(2 if quality<.5 else 6):
+			var spread=dir.rotated(rng.randf_range(-.34,.34))
+			add("spark",pos+dir*18,spread*rng.randf_range(110,240),Vector2(8,rng.randf_range(34,72)),.28,Color(color,.82),spread.angle()+PI*.5,cap)
+	elif kind=="v11_sustain":
+		var size=clampf(strength*28,38,92)
+		add("magic",pos,dir*12,Vector2.ONE*size,.25,Color(color,.34),dir.angle(),cap)
+		if role==1:add("smoke",pos-dir*10,Vector2(0,-28),Vector2.ONE*size*.72,.52,Color(.30,.31,.34,.25),rng.randf()*TAU,cap)
+	elif kind in ["v11_impact","v11_hit","v11_combo","v11_finish"]:
+		var scale_factor=64 if kind=="v11_finish" else (48 if kind=="v11_combo" else 34)
+		var size=clampf(strength*scale_factor,54,235)
+		add("light",pos,Vector2.ZERO,Vector2.ONE*size*1.45,.18,Color(color,.56),0,cap)
+		if role==1:
+			if kind in ["v11_finish","v11_combo"]:add("explosion",pos,Vector2.ZERO,Vector2.ONE*size,.48,Color.WHITE,0,cap)
+			for i in range(1 if quality<.5 else 3):add("smoke",pos,Vector2.from_angle(rng.randf()*TAU)*38+Vector2(0,-32),Vector2.ONE*size*.44,.72,Color(.27,.28,.31,.34),rng.randf()*TAU,cap)
+		else:add("magic",pos,Vector2.ZERO,Vector2.ONE*size,.32,Color(color,.54),rng.randf()*TAU,cap)
+		for i in range(3 if quality<.5 else 8):
+			var out=Vector2.from_angle(rng.randf()*TAU)
+			add("spark",pos+out*12,out*rng.randf_range(120,280),Vector2(7,rng.randf_range(30,80)),.34,Color(color,.78),out.angle()+PI*.5,cap)
+	elif kind=="v8_gather":
 		var gather_size=clampf(strength*58,80,220)
 		add("volume",pos,Vector2.ZERO,Vector2.ONE*gather_size*1.18,.72,Color(1,1,1,.46),-dir.angle()*.25,cap,role)
 		add("magic",pos,Vector2.ZERO,Vector2.ONE*gather_size,.65,Color(color,.72),dir.angle(),cap)
@@ -82,6 +114,7 @@ func draw(canvas: CanvasItem) -> void:
 			"explosion":tex=EXPLOSIONS[mini(8,int(phase*9))];size*=.7+phase*.5;col.a*=minf(1,(1-phase)*4)
 			"magic":tex=MAGIC;size*=.75+phase*.6;col.a*=1-phase
 			"volume":tex=VOLUMES[p.variant];size*=.72+sin(phase*PI)*.5;col.a*=sin(phase*PI)
+			"spark":tex=LIGHT;size.x*=.55+phase*.3;size.y*=1.0-phase*.65;col.a*=1.0-phase
 			_:col.a*=1-phase
 		canvas.draw_set_transform(p.p,p.a)
 		canvas.draw_texture_rect(tex,Rect2(-size*.5,size),false,col)

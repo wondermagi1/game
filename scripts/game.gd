@@ -15,6 +15,9 @@ const BuffEvolution = preload("res://scripts/buff_progression.gd")
 var rooms = preload("res://scripts/room_run.gd").new()
 var art
 var presentation_fx
+var screen_fx
+var ground_residue
+var vfx_timeline
 var cinematic
 var reduced_motion: bool = false
 var menu_parallax: bool = true
@@ -118,6 +121,16 @@ func _ready() -> void:
 	presentation_fx = preload("res://scripts/presentation_fx.gd").new()
 	presentation_fx.game = self
 	add_child(presentation_fx)
+	ground_residue = preload("res://scripts/ground_residue_v11.gd").new()
+	ground_residue.game = self
+	ground_residue.name = "GroundResidueV11"
+	add_child(ground_residue)
+	screen_fx = preload("res://scripts/screen_fx_v11.gd").new()
+	screen_fx.game = self
+	screen_fx.name = "ScreenFXV11"
+	add_child(screen_fx)
+	vfx_timeline = preload("res://scripts/skill_vfx_timeline.gd").new()
+	vfx_timeline.game = self
 	cinematic = preload("res://scripts/boss_cinematic.gd").new()
 	cinematic.game = self
 	add_child(cinematic)
@@ -349,6 +362,7 @@ func _process(delta: float) -> void:
 		save_clock = 0
 		if profile.dirty: profile.save_profile()
 	shake_strength = move_toward(shake_strength,0,delta*24)
+	if vfx_timeline!=null:vfx_timeline.tick(delta)
 	camera.offset = Vector2(sin(Time.get_ticks_msec()*0.09),cos(Time.get_ticks_msec()*0.071))*shake_strength if screen_shake and not reduced_motion and state=="combat" else Vector2.ZERO
 	if state != "combat": queue_redraw()
 
@@ -424,6 +438,9 @@ func explode(pos: Vector2, radius: float, amount: float, apply_status: bool = tr
 
 func clear_attacks() -> void:
 	if is_instance_valid(presentation_fx): presentation_fx.clear()
+	if is_instance_valid(screen_fx):screen_fx.clear()
+	if is_instance_valid(ground_residue):ground_residue.clear()
+	if vfx_timeline!=null:vfx_timeline.clear()
 	for shot in projectiles:
 		if is_instance_valid(shot):
 			shot.gone = true

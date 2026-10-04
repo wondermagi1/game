@@ -318,7 +318,8 @@ func combo(pos: Vector2, title: String) -> void:
 	combo_banner_time = 1.15
 	actor.visual.play_gesture("combo",.45)
 	game.profile.unlock("combo")
-	game.fx.combo_burst(pos,actor.stats.role,title)
+	if "vfx_timeline" in game and game.vfx_timeline!=null:game.vfx_timeline.combo(pos,actor.stats.role,title)
+	else:game.fx.combo_burst(pos,actor.stats.role,title)
 	game.sound.play(["combo_sword","combo_gun","combo_bow"][actor.stats.role])
 	game.shake_strength = maxf(game.shake_strength,3.0*game.effects_intensity)
 	game.banner = "连携技 · "+title

@@ -22,9 +22,9 @@ func ring(pos: Vector2, radius: float, color: Color) -> void:
 	if rings.size()>=maxi(12,int(80*game.effects_intensity)): return
 	rings.append({"p":pos,"r":radius,"t":0.4,"c":color})
 
-func number(pos: Vector2, amount: float, color: Color, big: bool = false) -> void:
+func number(pos: Vector2, amount: float, color: Color, big: bool = false, delay: float = 0.0) -> void:
 	if game.show_numbers and texts.size()<80:
-		texts.append({"p":pos+Vector2(visual_rng.randf_range(-12,12),-32),"text":(str(snappedf(amount/1e6,0.1))+"M" if amount>1.0e9 else str(ceili(amount))),"t":0.75,"c":color,"size":30 if big else 23})
+		texts.append({"p":pos+Vector2(visual_rng.randf_range(-12,12),-32),"text":(str(snappedf(amount/1e6,0.1))+"M" if amount>1.0e9 else str(ceili(amount))),"t":0.75,"delay":delay,"c":color,"size":30 if big else 23})
 
 func _process(delta: float) -> void:
 	if game.state not in ["combat","end"]: return
@@ -32,8 +32,10 @@ func _process(delta: float) -> void:
 		b.p += b.v * delta
 		b.t -= delta
 	for t in texts:
-		t.p.y -= delta * 38
-		t.t -= delta
+		if t.get("delay",0.0)>0:t.delay=maxf(0,t.delay-delta)
+		else:
+			t.p.y -= delta * 38
+			t.t -= delta
 	for r in rings: r.t -= delta
 	for t in trails: t.t -= delta
 	for seal in seals: seal.t -= delta
@@ -71,6 +73,7 @@ func _draw() -> void:
 		c.a = maxf(0,r.t/0.4)
 		draw_arc(r.p,r.r*(1.1-r.t),0,TAU,48,c,3,true)
 	for t in texts:
+		if t.get("delay",0.0)>0:continue
 		var c: Color = t.c
 		c.a = minf(1,t.t*3)
 		draw_string(font,t.p+Vector2(2,2),t.text,HORIZONTAL_ALIGNMENT_LEFT,-1,t.size,Color(0,0,0,c.a))
