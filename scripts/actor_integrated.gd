@@ -3,12 +3,29 @@ extends "res://scripts/actor_v6.gd"
 ## Default route: body, hands and weapon share one painted animation frame.
 ## The joint rig remains available only in the inspection scene for comparison.
 @export var articulated_preview: bool = false
+@export var action_keyframes_enabled: bool = true
 static var whole_textures: Dictionary={}
 static var whole_regions: Dictionary={}
 static var frame_meshes: Dictionary={}
 const WALK_PHASE_COUNT: int=8
 const WALK_ROWS=[0,1,1,0,0,2,2,0]
 const ACTION_PHASE_COUNT: int=6
+const ACTION_KEYFRAME_CELL:=Vector2(256,256)
+# Generated v9 action atlases: 6 columns (wind-up -> recovery) by 4 rows
+# (right, down, left, up). They are AI-assisted raster source art, then wired
+# and validated locally; they are not described as hand-drawn animation.
+const ACTION_KEYFRAME_SHEETS=[
+	preload("res://art/v9/sword-attack-keyframes-source.png"),
+	preload("res://art/v9/gunner-attack-keyframes-source.png"),
+	preload("res://art/v9/ranger-attack-keyframes-source.png")]
+const ACTION_KEYFRAME_ROW_BY_FACING=[0,1,1,2,2,3,3,0]
+# Keep the raster attack silhouettes at the same perceived height as the
+# integrated idle/run art. Per-role enlargement caused visible size pumping.
+const ACTION_KEYFRAME_SCALE=[.50,.50,.50]
+const ACTION_SOCKET_DISTANCE=[
+	[38.0,55.0,76.0,86.0,64.0,48.0],
+	[67.0,73.0,78.0,72.0,61.0,69.0],
+	[52.0,66.0,78.0,82.0,68.0,54.0]]
 const MOTION_CLIPS=["start","stop","turn","attack","dash","hurt","reload_open","reload_insert","reload_close","skill_0","skill_1","skill_2","ultimate_gather","ultimate_sustain","ultimate_finish","combo","victory","death"]
 var selected_row: int=0
 var last_move: float=0
@@ -47,6 +64,19 @@ func action_phase() -> float:
 	return clampf(clip_time/maxf(.01,clip_length),0.0,.999)
 func action_frame_index() -> int:
 	return mini(ACTION_PHASE_COUNT-1,int(action_phase()*ACTION_PHASE_COUNT))
+func uses_attack_keyframes() -> bool:
+	return action_keyframes_enabled and is_hero() and active_clip()=="attack" and kind>=0 and kind<ACTION_KEYFRAME_SHEETS.size()
+func action_keyframe_row(direction_index: int=-1) -> int:
+	var direction=facing_index if direction_index<0 else posmod(direction_index,8)
+	return ACTION_KEYFRAME_ROW_BY_FACING[direction]
+func action_keyframe_source(frame: int=-1,direction_index: int=-1) -> Rect2:
+	var phase=action_frame_index() if frame<0 else clampi(frame,0,ACTION_PHASE_COUNT-1)
+	return Rect2(Vector2(phase,action_keyframe_row(direction_index))*ACTION_KEYFRAME_CELL,ACTION_KEYFRAME_CELL)
+func action_keyframe_destination() -> Rect2:
+	var scale_factor=ACTION_KEYFRAME_SCALE[clampi(kind,0,ACTION_KEYFRAME_SCALE.size()-1)]
+	# Every authored cell is normalized to the same 252 px foot line, so attack frames no
+	# longer skate even when the torso and weapon silhouette changes strongly.
+	return Rect2(Vector2(-ACTION_KEYFRAME_CELL.x*.5,-252.0)*scale_factor,ACTION_KEYFRAME_CELL*scale_factor)
 func action_warp(point: Vector2, id: String="", frame: int=-1) -> Vector2:
 	if frame<0 or not id in MOTION_CLIPS:return point
 	var p=(frame+.5)/ACTION_PHASE_COUNT
@@ -123,6 +153,11 @@ func frame_mesh(row: int=-1, gait_frame: int=-1, direction_index: int=-1, action
 func muzzle_local() -> Vector2:
 	if articulated_preview:return super.muzzle_local()
 	update_pose()
+	if uses_attack_keyframes():
+		var distance=ACTION_SOCKET_DISTANCE[kind][action_frame_index()]
+		# Vertical aim is foreshortened by the three-quarter camera. The socket
+		# stays around the hands/barrel instead of sliding down to the character's feet.
+		return Vector2(aim.x,aim.y*.55)*distance+Vector2(0,-66)+frame_offset()
 	var data=frame_data();var r=data.rect
 	var point=(Vector2(r[2],r[3])*TIP_UV[kind][facing_index]-Vector2(data.anchor[0],data.anchor[1]))*(126.0/275)*Vector2(facing_mirror(),1)
 	point=gait_warp(point,walk_frame_index() if walk_render_active() else -1)
@@ -222,10 +257,14 @@ func _draw() -> void:
 		draw_texture_rect(preload("res://art/v6/fx/light_01.png"),Rect2(-42,-98,84,80),false,Color(P.QUALITY[clampi(quality,0,3)],.10*fade))
 	if dash_trail>0 and not reduced:draw_mesh(frame_mesh(),full_texture(),Transform2D(0,-aim*18),Color(tint,.18))
 	draw_set_transform(offset+gait_offset()+Vector2(0,death_time*12),gait_rotation()+frame_rotation(),gait_scale()*frame_scale()*Vector2(1,1-death_time*.15))
-	if id=="turn" and turn_from_facing!=facing_index:
-		var old_alpha=(1.0-action_phase())*.42*fade
-		draw_mesh(frame_mesh(selected_row,-1,turn_from_facing,"turn",action_sample),full_texture(),Transform2D.IDENTITY,Color(1,1,1,old_alpha))
-	draw_mesh(frame_mesh(selected_row,gait_sample,facing_index,id,action_sample),full_texture(),Transform2D.IDENTITY,Color(1.15 if flash>0 else 1,1.15 if flash>0 else 1,1.15 if flash>0 else 1,fade))
+	var shade=1.15 if flash>0 else 1.0
+	if uses_attack_keyframes():
+		draw_texture_rect_region(ACTION_KEYFRAME_SHEETS[kind],action_keyframe_destination(),action_keyframe_source(),Color(shade,shade,shade,fade))
+	else:
+		if id=="turn" and turn_from_facing!=facing_index:
+			var old_alpha=(1.0-action_phase())*.42*fade
+			draw_mesh(frame_mesh(selected_row,-1,turn_from_facing,"turn",action_sample),full_texture(),Transform2D.IDENTITY,Color(1,1,1,old_alpha))
+		draw_mesh(frame_mesh(selected_row,gait_sample,facing_index,id,action_sample),full_texture(),Transform2D.IDENTITY,Color(shade,shade,shade,fade))
 	draw_set_transform(Vector2.ZERO)
 	if debug_joints:
 		draw_circle(Vector2.ZERO,2,Color.CYAN)
