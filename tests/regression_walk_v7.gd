@@ -30,11 +30,13 @@ func run() -> void:
 			actor._process(0.0)
 			check(actor.walk_frame_index()==phase,"role %d gait phase %d"%[role,phase])
 			rows.append(actor.selected_row)
-			meshes[actor.frame_mesh(actor.selected_row,phase*4).get_rid()]=true
+			meshes[actor.frame_mesh(actor.selected_row,-1).get_rid()]=true
 			sockets.append(actor.muzzle_local())
-		check(rows==Array(actor.WALK_ROWS),"role %d authored gait sequence"%role)
-		check(meshes.size()==8,"role %d owns eight rendered in-between meshes"%role)
+		check(rows.all(func(row):return row==actor.WALK_ROW),"role %d keeps one stable running silhouette"%role)
+		check(meshes.size()==1,"role %d reuses one stable running mesh"%role)
 		check(sockets.all(func(p):return p.y<-35 and p.y>-135),"role %d weapon socket follows gait"%role)
+		var blend:=actor.walk_row_blend()
+		check(blend[0]==actor.WALK_ROW and blend[1]==actor.WALK_ROW and is_zero_approx(float(blend[2])),"role %d does not crossfade incompatible body poses"%role)
 		var previous_point:=Vector2.ZERO
 		var maximum_step:=0.0
 		var smooth_meshes: Dictionary={}
@@ -44,11 +46,13 @@ func run() -> void:
 			var point:=actor.muzzle_local()
 			if sample>0:maximum_step=maxf(maximum_step,point.distance_to(previous_point))
 			previous_point=point
-			smooth_meshes[actor.frame_mesh(actor.selected_row,actor.walk_sample_index()).get_rid()]=true
+			smooth_meshes[actor.frame_mesh(actor.selected_row,-1).get_rid()]=true
+			check(actor.gait_warp(Vector2(23,-81),sample)==Vector2(23,-81),"role %d sample %d never bends the silhouette"%[role,sample])
+			check(is_zero_approx(actor.gait_offset().x) and actor.gait_scale()==Vector2.ONE,"role %d sample %d has no lateral warp or scale pumping"%[role,sample])
 		actor.override_phase=.0001;actor._process(0.0)
 		maximum_step=maxf(maximum_step,actor.muzzle_local().distance_to(previous_point))
-		check(smooth_meshes.size()==actor.WALK_MESH_SAMPLE_COUNT,"role %d owns 32 continuous gait mesh samples"%role)
-		check(maximum_step<12.0,"role %d weapon socket has no gait boundary jump"%role)
+		check(smooth_meshes.size()==1,"role %d avoids duplicate undeformed gait meshes"%role)
+		check(maximum_step<1.0,"role %d weapon socket remains stable throughout running"%role)
 		actor.override_phase=.125
 		actor._process(0.0)
 		check(is_zero_approx(actor.gait_rotation()),"role %d walk no longer rocks the whole silhouette"%role)

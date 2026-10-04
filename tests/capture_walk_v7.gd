@@ -17,8 +17,8 @@ func run() -> void:
 	background.size=Vector2(1920,1080)
 	background.color=Color("#101923")
 	panel.add_child(background)
-	panel.add_child(label("三职业 · 32 采样连续步态",Vector2(70,30),38))
-	panel.add_child(label("8 个关键姿势平滑交叉淡化；青点为脚底基准，红点为连续武器出手位置",Vector2(70,82),22))
+	panel.add_child(label("三职业 · 稳定轮廓连续跑动",Vector2(70,30),38))
+	panel.add_child(label("取消横向扭曲、缩放和姿势叠影；青点为脚底基准，红点为武器出手位置",Vector2(70,82),22))
 	var names=["剑修","火枪手","游侠"]
 	for role in range(3):
 		panel.add_child(label(names[role],Vector2(45,205+role*290),25))

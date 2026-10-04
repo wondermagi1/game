@@ -9,7 +9,7 @@ static var whole_regions: Dictionary={}
 static var frame_meshes: Dictionary={}
 const WALK_PHASE_COUNT: int=8
 const WALK_MESH_SAMPLE_COUNT: int=32
-const WALK_ROWS=[0,1,1,0,0,2,2,0]
+const WALK_ROW: int=0
 const ACTION_PHASE_COUNT: int=6
 const ACTION_KEYFRAME_CELL:=Vector2(256,256)
 # Generated v9 action atlases: 6 columns (wind-up -> recovery) by 4 rows
@@ -109,39 +109,28 @@ func walk_frame_index() -> int:
 func walk_sample_index() -> int:
 	return mini(WALK_MESH_SAMPLE_COUNT-1,int(walk_phase()*WALK_MESH_SAMPLE_COUNT))
 func walk_row_blend() -> Array:
-	var phase_position: float=walk_phase()*WALK_PHASE_COUNT
-	var phase: int=mini(WALK_PHASE_COUNT-1,floori(phase_position))
-	var amount: float=phase_position-floor(phase_position)
-	# Smoothstep removes the velocity jump at both ends of every authored pose.
-	amount=amount*amount*(3.0-2.0*amount)
-	return [WALK_ROWS[phase],WALK_ROWS[(phase+1)%WALK_PHASE_COUNT],amount]
+	# The alternate full-frame rows have different torso and weapon silhouettes.
+	# Blending them reads as a side-to-side twist, so locomotion keeps one stable pose.
+	return [WALK_ROW,WALK_ROW,0.0]
 func walk_render_active() -> bool:
 	var id=forced_clip if not forced_clip.is_empty() else clip
 	return is_hero() and not dying and movement.length()>.08 and id!="dash" and selected_row<3
-func gait_warp(point: Vector2, sample: int=-1) -> Vector2:
-	if sample<0:return point
-	var phase=float(sample)/WALK_MESH_SAMPLE_COUNT
-	var upper=clampf(-point.y/112.0,0.0,1.0)
-	var stride=sin(phase*TAU)
-	var double_step=sin(phase*TAU*2.0)
-	# Thirty-two samples and a restrained upper-body shift keep the complete
-	# character/weapon silhouette continuous while the feet remain anchored.
-	return point+Vector2((stride*.62+double_step*.16)*upper,-absf(stride)*.62*upper)
+func gait_warp(point: Vector2, _sample: int=-1) -> Vector2:
+	# Never bend or shear the painted body. The character and weapon are one frame.
+	return point
 func gait_offset() -> Vector2:
 	if not walk_render_active() or reduced:return Vector2.ZERO
 	var phase=walk_phase()
-	return Vector2(sin(phase*TAU)*.10,-absf(sin(phase*TAU))*.72)
+	# Two very small vertical footfalls per cycle, with no lateral movement.
+	return Vector2(0,-absf(sin(phase*TAU))*.55)
 func gait_rotation() -> float:
 	# Whole-frame rocking read as a side-to-side twist on the integrated art.
 	return 0.0
 func gait_scale() -> Vector2:
-	if not walk_render_active() or reduced:return Vector2.ONE
-	var lift=absf(sin(walk_phase()*TAU))
-	return Vector2(1.0+lift*.002,1.0-lift*.004)
+	return Vector2.ONE
 func gait_point(point: Vector2) -> Vector2:
 	if not walk_render_active():return point
-	var warped=gait_warp(point,walk_sample_index())*gait_scale()
-	return warped.rotated(gait_rotation())+gait_offset()
+	return point+gait_offset()
 func frame_mesh(row: int=-1, gait_frame: int=-1, direction_index: int=-1, action_id: String="", action_frame: int=-1) -> ArrayMesh:
 	var source_row=selected_row if row<0 else row
 	var direction=facing_index if direction_index<0 else direction_index
@@ -175,9 +164,8 @@ func muzzle_local() -> Vector2:
 		var next_data=frame_data(int(blend[1]),facing_index);var next_rect=next_data.rect
 		var next_point=(Vector2(next_rect[2],next_rect[3])*TIP_UV[kind][facing_index]-Vector2(next_data.anchor[0],next_data.anchor[1]))*(126.0/275)*Vector2(facing_mirror(),1)
 		point=point.lerp(next_point,float(blend[2]))
-		point=gait_warp(point,walk_sample_index())
 	point=action_warp(point,active_clip(),action_frame_index())
-	if walk_render_active():point=(point*gait_scale()).rotated(gait_rotation())+gait_offset()
+	if walk_render_active():point+=gait_offset()
 	return point+frame_offset()
 func frame_offset() -> Vector2:
 	var phase=action_phase()
@@ -240,7 +228,7 @@ func _process(delta: float) -> void:
 		var cadence=lerpf(1.55,2.35,clampf((move_strength-.08)/.92,0.0,1.0))
 		motion_phase=fposmod(motion_phase+delta*playback_speed*cadence,1.0)
 	selected_row=0
-	if movement.length()>.08 or id in ["run_forward","run_back","strafe_left","strafe_right"]:selected_row=WALK_ROWS[walk_frame_index()]
+	if movement.length()>.08 or id in ["run_forward","run_back","strafe_left","strafe_right"]:selected_row=WALK_ROW
 	if id in ["attack","skill_0","skill_1","skill_2","ultimate_gather","ultimate_sustain","ultimate_finish","combo","dash"]:
 		# Keep the authored running frames between short attack releases at high fire rates.
 		if movement.length()<=.08 or clip_time<minf(.08,clip_length*.3) or id=="dash":selected_row=3
@@ -266,7 +254,8 @@ func _draw() -> void:
 	var fade=1-death_time
 	var id=active_clip()
 	var action_sample=action_frame_index() if id in MOTION_CLIPS else -1
-	var gait_sample=walk_sample_index() if walk_render_active() else -1
+	# Locomotion no longer deforms the mesh, so all phases share one cached mesh.
+	var gait_sample=-1
 	draw_set_transform(Vector2(0,4),0,Vector2(1,.28));draw_circle(Vector2.ZERO,24,Color(0,0,0,.3*fade));draw_set_transform(Vector2.ZERO)
 	if quality>=2:
 		draw_texture_rect(preload("res://art/v6/fx/light_01.png"),Rect2(-42,-98,84,80),false,Color(P.QUALITY[clampi(quality,0,3)],.10*fade))
