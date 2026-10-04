@@ -8,6 +8,7 @@ static var whole_textures: Dictionary={}
 static var whole_regions: Dictionary={}
 static var frame_meshes: Dictionary={}
 const WALK_PHASE_COUNT: int=8
+const WALK_MESH_SAMPLE_COUNT: int=32
 const WALK_ROWS=[0,1,1,0,0,2,2,0]
 const ACTION_PHASE_COUNT: int=6
 const ACTION_KEYFRAME_CELL:=Vector2(256,256)
@@ -105,32 +106,41 @@ func walk_phase() -> float:
 	return fposmod(motion_phase,1.0)
 func walk_frame_index() -> int:
 	return mini(WALK_PHASE_COUNT-1,int(walk_phase()*WALK_PHASE_COUNT))
+func walk_sample_index() -> int:
+	return mini(WALK_MESH_SAMPLE_COUNT-1,int(walk_phase()*WALK_MESH_SAMPLE_COUNT))
+func walk_row_blend() -> Array:
+	var phase_position: float=walk_phase()*WALK_PHASE_COUNT
+	var phase: int=mini(WALK_PHASE_COUNT-1,floori(phase_position))
+	var amount: float=phase_position-floor(phase_position)
+	# Smoothstep removes the velocity jump at both ends of every authored pose.
+	amount=amount*amount*(3.0-2.0*amount)
+	return [WALK_ROWS[phase],WALK_ROWS[(phase+1)%WALK_PHASE_COUNT],amount]
 func walk_render_active() -> bool:
 	var id=forced_clip if not forced_clip.is_empty() else clip
 	return is_hero() and not dying and movement.length()>.08 and id!="dash" and selected_row<3
-func gait_warp(point: Vector2, frame: int=-1) -> Vector2:
-	if frame<0:return point
-	var phase=float(frame)/WALK_PHASE_COUNT
+func gait_warp(point: Vector2, sample: int=-1) -> Vector2:
+	if sample<0:return point
+	var phase=float(sample)/WALK_MESH_SAMPLE_COUNT
 	var upper=clampf(-point.y/112.0,0.0,1.0)
 	var stride=sin(phase*TAU)
 	var double_step=sin(phase*TAU*2.0)
-	# Keep the integrated character and weapon together while the horizontal
-	# bands provide eight subtle in-between silhouettes. Feet stay anchored.
-	return point+Vector2((stride*1.35+double_step*.45)*upper,-absf(stride)*1.05*upper)
+	# Thirty-two samples and a restrained upper-body shift keep the complete
+	# character/weapon silhouette continuous while the feet remain anchored.
+	return point+Vector2((stride*.62+double_step*.16)*upper,-absf(stride)*.62*upper)
 func gait_offset() -> Vector2:
 	if not walk_render_active() or reduced:return Vector2.ZERO
 	var phase=walk_phase()
-	return Vector2(sin(phase*TAU)*.35,-absf(sin(phase*TAU))*1.4)
+	return Vector2(sin(phase*TAU)*.10,-absf(sin(phase*TAU))*.72)
 func gait_rotation() -> float:
-	if not walk_render_active() or reduced:return 0.0
-	return sin(walk_phase()*TAU)*.009
+	# Whole-frame rocking read as a side-to-side twist on the integrated art.
+	return 0.0
 func gait_scale() -> Vector2:
 	if not walk_render_active() or reduced:return Vector2.ONE
 	var lift=absf(sin(walk_phase()*TAU))
-	return Vector2(1.0+lift*.005,1.0-lift*.009)
+	return Vector2(1.0+lift*.002,1.0-lift*.004)
 func gait_point(point: Vector2) -> Vector2:
 	if not walk_render_active():return point
-	var warped=gait_warp(point,walk_frame_index())*gait_scale()
+	var warped=gait_warp(point,walk_sample_index())*gait_scale()
 	return warped.rotated(gait_rotation())+gait_offset()
 func frame_mesh(row: int=-1, gait_frame: int=-1, direction_index: int=-1, action_id: String="", action_frame: int=-1) -> ArrayMesh:
 	var source_row=selected_row if row<0 else row
@@ -160,7 +170,12 @@ func muzzle_local() -> Vector2:
 		return Vector2(aim.x,aim.y*.28)*distance+Vector2(0,-66)+frame_offset()
 	var data=frame_data();var r=data.rect
 	var point=(Vector2(r[2],r[3])*TIP_UV[kind][facing_index]-Vector2(data.anchor[0],data.anchor[1]))*(126.0/275)*Vector2(facing_mirror(),1)
-	point=gait_warp(point,walk_frame_index() if walk_render_active() else -1)
+	if walk_render_active():
+		var blend:=walk_row_blend()
+		var next_data=frame_data(int(blend[1]),facing_index);var next_rect=next_data.rect
+		var next_point=(Vector2(next_rect[2],next_rect[3])*TIP_UV[kind][facing_index]-Vector2(next_data.anchor[0],next_data.anchor[1]))*(126.0/275)*Vector2(facing_mirror(),1)
+		point=point.lerp(next_point,float(blend[2]))
+		point=gait_warp(point,walk_sample_index())
 	point=action_warp(point,active_clip(),action_frame_index())
 	if walk_render_active():point=(point*gait_scale()).rotated(gait_rotation())+gait_offset()
 	return point+frame_offset()
@@ -251,7 +266,7 @@ func _draw() -> void:
 	var fade=1-death_time
 	var id=active_clip()
 	var action_sample=action_frame_index() if id in MOTION_CLIPS else -1
-	var gait_sample=walk_frame_index() if walk_render_active() else -1
+	var gait_sample=walk_sample_index() if walk_render_active() else -1
 	draw_set_transform(Vector2(0,4),0,Vector2(1,.28));draw_circle(Vector2.ZERO,24,Color(0,0,0,.3*fade));draw_set_transform(Vector2.ZERO)
 	if quality>=2:
 		draw_texture_rect(preload("res://art/v6/fx/light_01.png"),Rect2(-42,-98,84,80),false,Color(P.QUALITY[clampi(quality,0,3)],.10*fade))
@@ -264,7 +279,16 @@ func _draw() -> void:
 		if id=="turn" and turn_from_facing!=facing_index:
 			var old_alpha=(1.0-action_phase())*.42*fade
 			draw_mesh(frame_mesh(selected_row,-1,turn_from_facing,"turn",action_sample),full_texture(),Transform2D.IDENTITY,Color(1,1,1,old_alpha))
-		draw_mesh(frame_mesh(selected_row,gait_sample,facing_index,id,action_sample),full_texture(),Transform2D.IDENTITY,Color(shade,shade,shade,fade))
+		if walk_render_active():
+			var blend:=walk_row_blend()
+			var from_row:=int(blend[0]);var to_row:=int(blend[1]);var amount:=float(blend[2])
+			if from_row==to_row:
+				draw_mesh(frame_mesh(from_row,gait_sample,facing_index,id,action_sample),full_texture(),Transform2D.IDENTITY,Color(shade,shade,shade,fade))
+			else:
+				draw_mesh(frame_mesh(from_row,gait_sample,facing_index,id,action_sample),full_texture(),Transform2D.IDENTITY,Color(shade,shade,shade,fade*(1.0-amount)))
+				draw_mesh(frame_mesh(to_row,gait_sample,facing_index,id,action_sample),full_texture(),Transform2D.IDENTITY,Color(shade,shade,shade,fade*amount))
+		else:
+			draw_mesh(frame_mesh(selected_row,gait_sample,facing_index,id,action_sample),full_texture(),Transform2D.IDENTITY,Color(shade,shade,shade,fade))
 	draw_set_transform(Vector2.ZERO)
 	if debug_joints:
 		draw_circle(Vector2.ZERO,2,Color.CYAN)
