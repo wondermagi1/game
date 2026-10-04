@@ -16,13 +16,34 @@ var obstacles: Array[Rect2] = []
 var navigation = AStarGrid2D.new()
 var font = SystemFont.new()
 const COLORS = [Color("#79ccb5"),Color("#caaa79"),Color("#b09bcf"),Color("#ce8b9e"),Color("#d99a65"),Color("#929de0")]
+const SCENE_BACKGROUNDS = [
+	"res://art/v10/scenes/chapter_01_jade_courtyard.png",
+	"res://art/v10/scenes/chapter_02_emberwood_foundry.png",
+	"res://art/v10/scenes/chapter_03_runic_archive.png",
+	"res://art/v10/scenes/chapter_04_crimson_shrine.png",
+	"res://art/v10/scenes/chapter_05_meridian_engine.png",
+	"res://art/v10/scenes/chapter_06_starfall_observatory.png"
+]
+var scene_background: Texture2D
 func _ready() -> void:
 	font.font_names = PackedStringArray(["Microsoft YaHei UI","Microsoft YaHei"])
+	load_scene_art()
 	for child in get_children():
 		if child is StaticBody2D:
 			var shape = child.get_node_or_null("Shape")
 			if shape and shape.shape is RectangleShape2D: obstacles.append(Rect2(child.position-shape.shape.size*0.5,shape.shape.size))
 	build_navigation()
+func load_scene_art() -> void:
+	var index := clampi(theme,0,SCENE_BACKGROUNDS.size()-1)
+	scene_background = load(SCENE_BACKGROUNDS[index])
+	if not has_node("SceneAtmosphere"):
+		var atmosphere = preload("res://scripts/room_atmosphere_v10.gd").new()
+		atmosphere.name = "SceneAtmosphere"
+		atmosphere.theme = index
+		atmosphere.room = self
+		add_child(atmosphere)
+	else:
+		get_node("SceneAtmosphere").theme = index
 func build_navigation() -> void:
 	navigation.region = Rect2i(0,0,48,27)
 	navigation.cell_size = Vector2(40,40)
@@ -66,6 +87,7 @@ func wall(rect: Rect2, gate: bool = false) -> void:
 	add_child(body)
 	if gate: gates.append(collision)
 func configure(exits: Array, done: bool, title: String = "", used: bool = false) -> void:
+	load_scene_art()
 	if run!=null and run.data.get("capybara",false) and not has_node("SpringWater"):
 		var spring=preload("res://scripts/ambient_v6.gd").new();spring.name="SpringWater";spring.room=self;add_child(spring)
 	doors = exits
@@ -89,47 +111,28 @@ func set_clear(value: bool) -> void:
 func _draw() -> void:
 	var c = COLORS[theme]
 	draw_rect(Rect2(0,0,1920,1080),Color("#080e18"))
-	draw_rect(Rect2(70,160,1780,790),Color("#142333").lerp(c,0.07))
-	var atlas = preload("res://scripts/presentation.gd").FLOORS
-	var region = Rect2((theme%3)*512,floori(theme/3.0)*512,512,512)
-	# Use near-native texel scale rather than stretching one square across the arena.
-	for row in range(2):
-		for col in range(4):
-			var p=Vector2(70+col*445,160+row*395)
-			draw_texture_rect_region(atlas,Rect2(p,Vector2(445,395)),region,Color(.64,.69,.73,.73))
+	if scene_background!=null:
+		draw_texture_rect(scene_background,Rect2(0,0,1920,1080),false,Color(.86,.88,.92))
+		# The art carries the architecture. A restrained veil keeps actors, danger
+		# markers and projectiles readable on every theme.
+		draw_rect(Rect2(70,160,1780,790),Color(0.015,0.025,0.045,0.10))
+	else:
+		draw_rect(Rect2(70,160,1780,790),Color("#142333").lerp(c,0.07))
+		var atlas = preload("res://scripts/presentation.gd").FLOORS
+		var region = Rect2((theme%3)*512,floori(theme/3.0)*512,512,512)
+		for row in range(2):
+			for col in range(4):
+				var p=Vector2(70+col*445,160+row*395)
+				draw_texture_rect_region(atlas,Rect2(p,Vector2(445,395)),region,Color(.64,.69,.73,.73))
 	if run!=null and run.data.get("capybara",false): draw_onsen()
-	for x in range(70,1850,80):
-		for y in range(160,950,80):
-			var tile = Rect2(x+2,y+2,76,76)
-			draw_rect(tile,Color(c,0.035 if (x+y)%160==70 else 0.06))
-	# Six architectural vocabularies: garden, timber, runes, altar, machinery, stars.
-	for side in [0,1]:
-		for i in range(6):
-			var p = Vector2(160+i*320,210+side*690)
-			match theme:
-				0:
-					draw_circle(p,18,Color("#386a59")); draw_circle(p+Vector2(12,-8),12,Color("#508476"))
-				1:
-					draw_line(p-Vector2(25,0),p+Vector2(25,0),Color("#825f43"),12); draw_circle(p,10,Color("#eda15f"))
-				2:
-					draw_arc(p,22,0,TAU,6,c,2); draw_line(p-Vector2(10,12),p+Vector2(10,-12),c,3)
-				3:
-					draw_colored_polygon(PackedVector2Array([p+Vector2(0,-28),p+Vector2(25,10),p+Vector2(-25,10)]),c.darkened(0.6)); draw_circle(p,6,c)
-				4:
-					draw_arc(p,22,0,TAU,12,c,6); draw_line(p-Vector2(25,0),p+Vector2(25,0),c.darkened(0.4),8)
-				5:
-					draw_arc(p,25,0,TAU,4,c,2); draw_line(p-Vector2(0,35),p+Vector2(0,35),Color(c,0.4),2)
 	for rect in obstacles:
-		draw_rect(Rect2(rect.position+Vector2(7,10),rect.size),Color(0,0,0,0.35))
-		draw_rect(rect,c.darkened(0.72))
-		draw_rect(rect.grow(-7),c.darkened(0.5))
-		draw_texture_rect_region(atlas,Rect2(rect.position+Vector2(5,-10),rect.size-Vector2(10,0)),Rect2(region.position+Vector2(60,40),Vector2(230,180)),Color(.75,.77,.8))
-		draw_rect(Rect2(rect.position+Vector2(0,rect.size.y-12),Vector2(rect.size.x,15)),c.darkened(.8))
-		draw_line(rect.position,Vector2(rect.end.x,rect.position.y),c.lightened(0.1),4)
-		if theme==1 or theme==4:
-			draw_line(rect.position+Vector2(6,6),rect.end-Vector2(6,6),Color(c,0.4),4)
-		else: draw_arc(rect.get_center(),minf(25,rect.size.y*0.25),0,TAU,4+theme,Color(c,0.7),2)
-	draw_rect(Rect2(70,160,1780,790),Color(c,0.45),false,5)
+		draw_rect(Rect2(rect.position+Vector2(9,13),rect.size),Color(0,0,0,0.42))
+		draw_rect(rect,c.darkened(0.78))
+		draw_rect(rect.grow(-6),c.darkened(0.55))
+		draw_rect(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,maxf(8,rect.size.y*.18))),Color(c.lightened(.15),.42))
+		draw_line(rect.position+Vector2(7,rect.size.y-8),rect.end-Vector2(7,8),Color(c.darkened(.75),.75),5)
+		draw_arc(rect.get_center(),minf(28,rect.size.y*.22),0,TAU,8+theme*2,Color(c,.56),2,true)
+	draw_rect(Rect2(70,160,1780,790),Color(c,0.34),false,3)
 	for door in doors:
 		var dir = Vector2(door.dir[0],door.dir[1])
 		var p = portal(dir)
