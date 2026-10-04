@@ -92,6 +92,8 @@ func _draw() -> void:
 				draw_set_transform(g.p)
 				for i in range(8):
 					var p = Vector2.from_angle(i*TAU/8)*g.size*progress*0.6
-					draw_circle(p,g.size*(1-progress)*0.28,Color(color,0.5))
+					# The V9 fire-and-smoke core carries the explosion volume. Keep these
+					# lobes as a translucent pressure envelope instead of an opaque orange blob.
+					draw_circle(p,g.size*(1-progress)*0.11,Color(color,0.22))
 				draw_arc(Vector2.ZERO,g.size*progress,0,TAU,48,color,6*(1-progress)+1,true)
 	draw_set_transform(Vector2.ZERO)

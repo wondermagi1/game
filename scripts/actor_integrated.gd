@@ -157,7 +157,7 @@ func muzzle_local() -> Vector2:
 		var distance=ACTION_SOCKET_DISTANCE[kind][action_frame_index()]
 		# Vertical aim is foreshortened by the three-quarter camera. The socket
 		# stays around the hands/barrel instead of sliding down to the character's feet.
-		return Vector2(aim.x,aim.y*.55)*distance+Vector2(0,-66)+frame_offset()
+		return Vector2(aim.x,aim.y*.28)*distance+Vector2(0,-66)+frame_offset()
 	var data=frame_data();var r=data.rect
 	var point=(Vector2(r[2],r[3])*TIP_UV[kind][facing_index]-Vector2(data.anchor[0],data.anchor[1]))*(126.0/275)*Vector2(facing_mirror(),1)
 	point=gait_warp(point,walk_frame_index() if walk_render_active() else -1)

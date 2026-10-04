@@ -12,6 +12,14 @@
 - 普攻图集采用统一 0.50 显示比例。待机、普攻和回到待机使用同一节点缩放，人物身高不再在攻击瞬间跳变。
 - 保留旧集成立绘渲染作为可关闭的回退路径，存档、数值、伤害和输入逻辑未改动。
 
+## 第二批：C 技能体积核心
+
+- 剑修增加青白剑气云涡，作为万剑阵和巨剑终结背后的雾化能量核心。
+- 火枪手增加带白热中心、橙红火舌和深灰烟云的爆燃核心；旧版八个大面积橙色圆团收窄为低透明压力层，保留爆炸节奏但不再遮住烟火细节。
+- 游侠增加翠绿星风、金色星点和叶片流组成的风眼核心，与现有群星弓阵、巨箭和地面余辉叠加。
+- 三张 1254×1254 透明图只参与渲染，不带伤害回调。聚势、持续、冲击和终结按阶段缩放与淡出，继续受低/中/高特效档和 80 个材质粒子上限约束。
+- 火枪手、游侠沿用已确认的第五版终极技能音频，本批没有替换声音文件。
+
 ## 素材说明
 
 动作图集以工程现有 V6 集成立绘为角色视觉基准，通过 AI 辅助生成，再在本地完成透明单元清理、脚底对齐、Godot 接入、挂点调整和实际渲染检查。它们不是从其他游戏提取的资源，也不标注为人工逐帧手绘。更完整说明见 `art/v9/README.md`。
@@ -23,8 +31,13 @@
 ## 验收
 
 - `regression_action_v9.gd`：160 项通过。
+- `regression_volume_v9.gd`：24 项通过。
 - `regression_motion_v8.gd`：57 项通过。
 - `regression_visual_v8.gd`：23 项通过。
+- `regression_v6.gd`：548 项通过。
 - `docs/screenshots-v9/01-three-role-attack-keyframes.png`：三职业六阶段。
 - `docs/screenshots-v9/02-four-direction-release.png`：四方向释放姿态与动态挂点。
 - `docs/screenshots-v9/03-attack-scale-continuity.png`：待机→普攻→待机尺寸连续性。
+- `docs/screenshots-v9/04-ultimate-volume-cores.png`：三职业独立体积核心。
+- `docs/screenshots-v9/05-ultimate-*-sustain.png`：真实战斗持续阶段。
+- `docs/screenshots-v9/06-ultimate-*-finish.png`：真实战斗终结阶段。

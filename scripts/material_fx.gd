@@ -6,11 +6,12 @@ const SMOKE=[preload("res://art/v6/fx/smoke_01.png"),preload("res://art/v6/fx/sm
 const FLAMES=[preload("res://art/v6/fx/flame_01.png"),preload("res://art/v6/fx/flame_02.png"),preload("res://art/v6/fx/flame_03.png")]
 const LIGHT=preload("res://art/v6/fx/light_01.png")
 const MAGIC=preload("res://art/v6/fx/magic_01.png")
+const VOLUMES=[preload("res://art/v9/fx/sword-volume.png"),preload("res://art/v9/fx/gunner-volume.png"),preload("res://art/v9/fx/ranger-volume.png")]
 const EXPLOSIONS=[preload("res://art/v6/fx/explosion00.png"),preload("res://art/v6/fx/explosion01.png"),preload("res://art/v6/fx/explosion02.png"),preload("res://art/v6/fx/explosion03.png"),preload("res://art/v6/fx/explosion04.png"),preload("res://art/v6/fx/explosion05.png"),preload("res://art/v6/fx/explosion06.png"),preload("res://art/v6/fx/explosion07.png"),preload("res://art/v6/fx/explosion08.png")]
 func _init() -> void: rng.seed=61927
-func add(type: String, pos: Vector2, velocity: Vector2, size: Vector2, duration: float, color: Color, angle: float = 0, cap: int = 112) -> void:
+func add(type: String, pos: Vector2, velocity: Vector2, size: Vector2, duration: float, color: Color, angle: float = 0, cap: int = 112, variant_override: int = -1) -> void:
 	if bits.size()>=cap: bits.pop_front()
-	bits.append({"type":type,"p":pos,"v":velocity,"size":size,"life":duration,"max":duration,"c":color,"a":angle,"variant":rng.randi_range(0,2)})
+	bits.append({"type":type,"p":pos,"v":velocity,"size":size,"life":duration,"max":duration,"c":color,"a":angle,"variant":clampi(variant_override,0,2) if variant_override>=0 else rng.randi_range(0,2)})
 func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float, quality: float) -> void:
 	# Gunner uses V5 flashes/rings again, also in the action inspector.
 	# V8 ultimate layers are additive visuals and intentionally keep the accepted
@@ -20,6 +21,7 @@ func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float, 
 	var color=[Color("#99f7ef"),Color("#ffb269"),Color("#a5e9bc")][clampi(role,0,2)]
 	if kind=="v8_gather":
 		var gather_size=clampf(strength*58,80,220)
+		add("volume",pos,Vector2.ZERO,Vector2.ONE*gather_size*1.18,.72,Color(1,1,1,.46),-dir.angle()*.25,cap,role)
 		add("magic",pos,Vector2.ZERO,Vector2.ONE*gather_size,.65,Color(color,.72),dir.angle(),cap)
 		add("light",pos,Vector2.ZERO,Vector2.ONE*gather_size*1.15,.32,Color(color,.45),0,cap)
 		for i in range(1 if quality<.5 else 3):
@@ -29,11 +31,13 @@ func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float, 
 			add("flame",pos+dir*18,dir*28,Vector2(54,96),.34,Color("#ffc06a"),dir.angle()+PI/2,cap)
 	elif kind=="v8_sustain":
 		var sustain_size=clampf(strength*34,44,150)
+		add("volume",pos,dir*5,Vector2.ONE*sustain_size*1.32,.34,Color(1,1,1,.26),dir.angle()*.18,cap,role)
 		add("magic",pos,dir*10,Vector2.ONE*sustain_size,.28,Color(color,.48),dir.angle(),cap)
 		if role==1:
 			add("smoke",pos-dir*12,Vector2(0,-30),Vector2.ONE*sustain_size*.7,.62,Color(.4,.42,.46,.35),0,cap)
 	elif kind in ["v8_impact","v8_finish"]:
 		var finish_size=clampf(strength*(58 if kind=="v8_finish" else 38),70,280)
+		add("volume",pos,Vector2.ZERO,Vector2.ONE*finish_size*(1.34 if kind=="v8_finish" else .92),.62,Color(1,1,1,.68 if kind=="v8_finish" else .40),dir.angle()*.12,cap,role)
 		if role==1:add("explosion",pos,Vector2.ZERO,Vector2.ONE*finish_size,.52,Color.WHITE,dir.angle(),cap)
 		else:add("magic",pos,Vector2.ZERO,Vector2.ONE*finish_size,.44,Color(color,.82),dir.angle()+PI*.25,cap)
 		add("light",pos,Vector2.ZERO,Vector2.ONE*finish_size*1.35,.22,Color(color,.62),0,cap)
@@ -77,6 +81,7 @@ func draw(canvas: CanvasItem) -> void:
 			"smoke":tex=SMOKE[p.variant];size*=.65+phase*.95;col.a*=sin(phase*PI)*.9
 			"explosion":tex=EXPLOSIONS[mini(8,int(phase*9))];size*=.7+phase*.5;col.a*=minf(1,(1-phase)*4)
 			"magic":tex=MAGIC;size*=.75+phase*.6;col.a*=1-phase
+			"volume":tex=VOLUMES[p.variant];size*=.72+sin(phase*PI)*.5;col.a*=sin(phase*PI)
 			_:col.a*=1-phase
 		canvas.draw_set_transform(p.p,p.a)
 		canvas.draw_texture_rect(tex,Rect2(-size*.5,size),false,col)

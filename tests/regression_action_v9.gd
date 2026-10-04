@@ -40,7 +40,7 @@ func run() -> void:
 				regions[str(source.position)]=true
 				check(source.position.x>=0 and source.position.y>=0 and source.end.x<=1536 and source.end.y<=1024,"role %d direction %d phase %d stays inside atlas"%[role,cardinal,phase])
 				var socket=actor.muzzle_local()
-				check(socket.length()<180 and socket.y<5,"role %d direction %d phase %d socket remains above feet"%[role,cardinal,phase])
+				check(socket.length()<180 and socket.y<-35,"role %d direction %d phase %d socket remains at the held weapon"%[role,cardinal,phase])
 		check(regions.size()==24,"role %d exposes 24 unique four-direction keyframes"%role)
 		var destination=actor.action_keyframe_destination()
 		check(destination.size.y>=127 and destination.size.y<=129 and absf(destination.end.y)<5,"role %d keeps a stable action foot line without enlarging"%role)
