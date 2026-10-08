@@ -67,11 +67,6 @@ func run() -> void:
 				if item.role==role: own+=1
 			var record = {"chapter":chapter,"role":role,"build":build,"won":game.won,"timeout":frames>=45000,"seconds":snappedf(game.elapsed,0.1),"boss_seconds":snappedf(boss_seconds,0.1),"kills":game.kills,"hp":snappedf(game.player.hp,0.1),"damage_taken":snappedf(game.taken,0.1),"gold":game.earned_gold,"xp":game.earned_xp,"materials":int(game.profile.data.material)-start_material,"equipment":game.earned_gear,"qualities":quality,"own_role":own,"room_count":game.rooms.data.rooms.size(),"peak_enemies":peak,"final_room":game.rooms.data.current,"combo_count":game.player.skills.combo_count}
 			record.merge(fixture)
-			if frames>=45000:
-				var remaining: Array = []
-				for enemy in game.enemies:
-					if is_instance_valid(enemy): remaining.append({"kind":enemy.kind,"p":str(enemy.global_position),"hp":enemy.hp,"state":enemy.state})
-				record["timeout_diagnostics"]={"player":str(game.player.global_position),"movement":str(game.player.scripted_movement),"enemies":remaining,"state":game.state}
 			results.append(record)
 			var f = FileAccess.open("res://tests/autoplay_v4_%s_%d_%d.json"%[build,only_chapter,only_role],FileAccess.WRITE)
 			f.store_string(JSON.stringify(results,"  ")); f.close()
@@ -116,7 +111,7 @@ func pilot(frame: int) -> void:
 			move = walk_to(point)
 			if p.position.distance_to(point)<85: game.rooms.interact()
 		elif not r.event.is_empty() and not r.used:
-			var point: Vector2 = game.rooms.origin()+game.rooms.scene.event_position()
+			var point: Vector2 = game.rooms.origin()+Vector2(960,540)
 			move = walk_to(point)
 			if p.position.distance_to(point)<115: game.rooms.interact()
 		else:
@@ -126,16 +121,13 @@ func pilot(frame: int) -> void:
 				var dir = Vector2(n.grid[0]-r.grid[0],n.grid[1]-r.grid[1])
 				var point: Vector2 = game.rooms.origin()+game.rooms.scene.portal(dir)-dir*35
 				move = walk_to(point)
-	elif game.rooms.waves_done==0:
-		move = walk_to(game.rooms.scene.to_global(game.rooms.scene.event_position()))
 	if p.hp<p.stats.value("hp")*0.45: p.use_item(0); p.use_item(1)
 	var local: Vector2 = p.position-game.rooms.origin()
 	if not r.cleared:
-		var bounds: Rect2 = game.rooms.scene.arena_rect().grow(-70)
-		if local.x<bounds.position.x: move.x+=2
-		if local.x>bounds.end.x: move.x-=2
-		if local.y<bounds.position.y: move.y+=2
-		if local.y>bounds.end.y: move.y-=2
+		if local.x<140: move.x+=2
+		if local.x>1780: move.x-=2
+		if local.y<235: move.y+=2
+		if local.y>880: move.y-=2
 	p.scripted_movement = move.normalized()
 func walk_to(point: Vector2) -> Vector2:
 	if game.player.position.distance_to(point)<120: return game.player.position.direction_to(point)

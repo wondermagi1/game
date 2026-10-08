@@ -25,21 +25,6 @@ const SCENE_BACKGROUNDS = [
 	"res://art/v10/scenes/chapter_06_starfall_observatory.png"
 ]
 var scene_background: Texture2D
-# Spatial contract shared by the original rooms and the larger garden.
-func arena_rect() -> Rect2:
-	return Rect2(70,160,1780,790)
-func entry_position() -> Vector2:
-	return Vector2(960,740)
-func event_position() -> Vector2:
-	return Vector2(960,540)
-func camera_target(_actor_world: Vector2) -> Vector2:
-	return to_global(Vector2(960,540))
-func has_depth() -> bool:
-	return false
-func combat_ready(_actor_world: Vector2) -> bool:
-	return true
-func try_interact(_local_pos: Vector2) -> bool:
-	return false
 func _ready() -> void:
 	font.font_names = PackedStringArray(["Microsoft YaHei UI","Microsoft YaHei"])
 	load_scene_art()
