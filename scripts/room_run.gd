@@ -32,6 +32,8 @@ func clear_scene() -> void:
 	scene = null
 func stop() -> void:
 	active = false
+	game.y_sort_enabled = false
+	game.camera.position = Vector2(960,540)
 	game.flow.exploration = false
 	clear_scene()
 	data.clear()
@@ -60,7 +62,10 @@ func enter(id: String, from_id: String = "") -> void:
 	game.flow.room_waves = int(r.waves)
 	var first_visit: bool = not r.visited
 	r.visited = true
-	scene = load("res://scenes/rooms/%s.tscn"%r.layout).instantiate()
+	# Preserve saved graph/layout IDs. Only chapter one's normal route uses the
+	# Japanese garden; Lulu, later chapters and the abyss retain their own stages.
+	var room_layout: String = "garden_v12" if game.stage==1 and not data.get("capybara",false) else str(r.layout)
+	scene = load("res://scenes/rooms/%s.tscn"%room_layout).instantiate()
 	scene.position = origin()
 	scene.theme = game.stage-1
 	game.add_child(scene)
@@ -77,14 +82,16 @@ func enter(id: String, from_id: String = "") -> void:
 	scene.clue_count = int(data.switches)
 	if not r.has("broken"): r.broken = []
 	if r.kind in ["battle","elite"]: scene.add_crates(r.broken)
-	game.ARENA = Rect2(origin()+Vector2(70,160),Vector2(1780,790))
-	game.camera.position = origin()+Vector2(960,540)
-	var spawn = Vector2(960,740)
+	game.ARENA = Rect2(origin()+scene.arena_rect().position,scene.arena_rect().size)
+	game.y_sort_enabled = scene.has_depth()
+	var spawn: Vector2 = scene.entry_position()
 	if not from_id.is_empty() and data.rooms.has(from_id):
 		var previous: Dictionary = data.rooms[from_id]
 		var dir = Vector2(previous.grid[0]-r.grid[0],previous.grid[1]-r.grid[1])
 		spawn = scene.portal(dir)-dir*140
 	game.player.global_position = origin()+scene.safe(spawn,28)
+	game.camera.position = scene.camera_target(game.player.global_position)
+	game.camera.reset_smoothing()
 	game.player.invulnerable = maxf(1.2,game.player.invulnerable)
 	game.player.scripted_movement = Vector2.ZERO
 	game.flow.hidden = r.kind=="secret"
@@ -99,7 +106,8 @@ func enter(id: String, from_id: String = "") -> void:
 	game.banner = "%s · %s"%[game.flow.title(),Graph.NAMES[r.kind]]
 	game.banner_time = 2.5
 	if not r.cleared:
-		spawn_wave()
+		if scene.combat_ready(game.player.global_position): spawn_wave()
+		else: game.notify_player("沿石径进入庭院中央，开始本次遭遇。",5)
 	elif first_visit and r.kind=="event":
 		game.notify_player("靠近房间中央，按 %s 与%s交互。"%[game.bindings.text("interact"),Graph.EVENT_NAMES[r.event]],5)
 	if r.id=="r2" and data.rooms.has("secret") and not data.revealed:
@@ -124,6 +132,9 @@ func tick(delta: float) -> void:
 	if not active or game.state!="combat": return
 	var r = current()
 	if not r.cleared:
+		if waves_done==0:
+			if not scene.combat_ready(game.player.global_position): return
+			spawn_wave()
 		game.spawn_clock -= delta
 		if game.spawn_clock<=0 and not game.pending.is_empty():
 			var item = game.pending.pop_front()
@@ -150,6 +161,7 @@ func tick(delta: float) -> void:
 func interact() -> void:
 	if not active or game.state!="combat" or not current().cleared: return
 	var p: Vector2 = game.player.global_position-origin()
+	if scene.try_interact(p): return
 	if current().id=="r2" and data.rooms.has("secret") and not data.revealed and p.distance_to(Vector2(960,235))<140:
 		data.switches = mini(3,int(data.switches)+1)
 		scene.clue_count = int(data.switches)
@@ -164,7 +176,7 @@ func interact() -> void:
 			game.player.global_position = player_pos
 			game.profile.discover("hidden_gate")
 		return
-	if p.distance_to(Vector2(960,540))<160 and not current().event.is_empty() and not current().used:
+	if p.distance_to(scene.event_position())<160 and not current().event.is_empty() and not current().used:
 		if current().event=="secret":
 			current().used = true
 			current().cleared = false
@@ -470,6 +482,7 @@ func abandon() -> bool:
 
 func abyss_room(floor_id: int) -> void:
 	game.flow.capybara = false
+	game.y_sort_enabled = false
 	active = false
 	game.flow.exploration = false
 	clear_scene()

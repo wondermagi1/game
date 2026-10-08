@@ -1,0 +1,5 @@
+{
+	"checks": 14,
+	"failures": [],
+	"mode": "real physics traversal, no combat, memory-only profile"
+}

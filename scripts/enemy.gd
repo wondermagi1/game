@@ -86,7 +86,7 @@ func _ready() -> void:
 	visual.enemy_id = kind
 	visual.elite = elite
 	add_child(visual)
-	z_index = 4
+	z_index = 5 if is_instance_valid(game.rooms.scene) and game.rooms.scene.has_depth() else 4
 	cooldown = game.rng.randf_range(0.3,1.0)
 	modifier_clock = game.rng.randf_range(3.5,6.5)
 

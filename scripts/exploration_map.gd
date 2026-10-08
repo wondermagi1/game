@@ -10,6 +10,9 @@ func _process(_delta: float) -> void:
 	if visible: queue_redraw()
 func _draw() -> void:
 	if not game.rooms.active: return
+	if not expanded and game.rooms.scene.has_depth():
+		draw_garden_map()
+		return
 	var data: Dictionary = game.rooms.data
 	var step = Vector2(165,155) if expanded else Vector2(44,25)
 	var base = Vector2(90,220) if expanded else Vector2(27,57)
@@ -41,7 +44,8 @@ func _draw() -> void:
 		draw_rect(Rect2(p-dims*0.5,dims),color,false,2)
 		if id==data.current:
 			draw_rect(Rect2(p-dims*0.5-Vector2(4,4),dims+Vector2(8,8)),Color("#ffe3a3"),false,2)
-			var local_pos: Vector2 = (game.player.global_position-game.rooms.origin()-Vector2(960,555))/Vector2(1780,790)
+			var bounds: Rect2 = game.rooms.scene.arena_rect()
+			var local_pos: Vector2 = (game.player.global_position-game.rooms.origin()-bounds.get_center())/bounds.size
 			draw_circle(p+local_pos*dims,4,Color.WHITE)
 		var code = {"start":"营","battle":"战","elite":"精","event":"宝" if r.event=="chest" else "奇","boss":"王","secret":"隐"}[r.kind]
 		if expanded:
@@ -54,3 +58,25 @@ func panel_style() -> StyleBoxFlat:
 	style.bg_color = Color(0.025,0.05,0.09,0.88)
 	style.set_corner_radius_all(8)
 	return style
+
+func draw_garden_map() -> void:
+	var room = game.rooms.scene
+	draw_style_box(panel_style(),Rect2(Vector2.ZERO,size))
+	draw_string(font,Vector2(12,21),room.area_name,HORIZONTAL_ALIGNMENT_LEFT,-1,18,Color("#ead7ab"))
+	draw_string(font,Vector2(12,44),"%s 路线 · %s 交互"%[game.bindings.text("map"),game.bindings.text("interact")],HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("#cad8c2"))
+	var hint := "沿石径向右前进" if room.cleared else ("进入庭院中央开始遭遇" if game.rooms.waves_done==0 else "击败附近敌人开启出口")
+	draw_string(font,Vector2(12,66),hint,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("#cad8c2"))
+	var count := 0
+	for i in range(room.caches.size()):
+		if game.rooms.current().broken.has("garden_offering_%d"%i): count+=1
+	draw_string(font,Vector2(12,86),"支路供奉 %d / 2"%count,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("#d7c490"))
+	var rect := Rect2(225,10,100,75)
+	draw_texture_rect(room.GROUND,rect,false,Color(.76,.83,.75))
+	var pos: Vector2 = room.to_local(game.player.global_position)/room.WORLD
+	var camera_local: Vector2 = room.to_local(game.camera.position)
+	var view := Rect2(rect.position+(camera_local-Vector2(960,540))/room.WORLD*rect.size,Vector2(1920,1080)/room.WORLD*rect.size)
+	draw_rect(view,Color(1,.96,.82,.6),false,1)
+	for p in room.caches: draw_circle(rect.position+p/room.WORLD*rect.size,2,Color("#f0c96e"))
+	for enemy in game.enemies:
+		if is_instance_valid(enemy): draw_circle(rect.position+room.to_local(enemy.global_position)/room.WORLD*rect.size,1.6,Color("#fc8c80"))
+	draw_circle(rect.position+pos*rect.size,3,Color.WHITE)

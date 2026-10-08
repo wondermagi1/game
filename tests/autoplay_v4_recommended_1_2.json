@@ -1,0 +1,40 @@
+[
+  {
+    "boss_seconds": 14.0,
+    "build": "recommended",
+    "chapter": 1,
+    "combo_count": 2,
+    "damage_taken": 0.0,
+    "equipment": 3,
+    "final_room": "r3",
+    "fixture_enhance": 0,
+    "fixture_level": 1,
+    "fixture_quality": "starter",
+    "fixture_set_pieces": 0,
+    "fixture_skill_ranks": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "fixture_talent_points": 0,
+    "gold": 1165,
+    "hp": 118.0,
+    "kills": 7,
+    "materials": 20,
+    "own_role": 3,
+    "peak_enemies": 5,
+    "qualities": [
+      0,
+      2,
+      1,
+      0
+    ],
+    "role": 2,
+    "room_count": 4,
+    "seconds": 42.3,
+    "timeout": false,
+    "won": true,
+    "xp": 1914
+  }
+]

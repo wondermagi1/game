@@ -6,7 +6,7 @@ var combo_pulse: float=0
 func show_menu() -> void:
 	super.show_menu()
 	for child in overlay.get_children():
-		if child is Label: child.text = child.text.replace("合刃同行  0.6.2","灵境重铸  0.8.0").replace("九流化境  0.7.0","灵境重铸  0.8.0")
+		if child is Label: child.text = child.text.replace("合刃同行  0.6.2","薄樱行旅  0.12.0").replace("九流化境  0.7.0","薄樱行旅  0.12.0")
 	box(overlay,Rect2(1050,120,715,70),Color("#10232d"),Color("#6d8d86"))
 	label(overlay,V7.CAMP_NPC+"："+camp_story_line(),Rect2(1070,130,675,50),17,Color("#c8e5d9"))
 

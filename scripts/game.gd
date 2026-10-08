@@ -92,7 +92,7 @@ func apply_window_resolution() -> void:
 	window.position=desktop.position+Vector2i(maxi(0,(desktop.size.x-window_resolution.x)/2),maxi(0,(desktop.size.y-window_resolution.y)/2))
 
 func _ready() -> void:
-	get_window().title = "三途试炼 · 灵境重铸 " + str(ProjectSettings.get_setting("application/config/version"))
+	get_window().title = "三途试炼 · 薄樱行旅 " + str(ProjectSettings.get_setting("application/config/version"))
 	profile.memory_only = test_mode
 	profile.load_profile()
 	get_tree().auto_accept_quit = false
@@ -356,6 +356,10 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 func _process(delta: float) -> void:
+	if rooms.active and is_instance_valid(rooms.scene) and is_instance_valid(player) and state=="combat":
+		var target: Vector2 = rooms.scene.camera_target(player.global_position)
+		camera.position = camera.position.lerp(target,1.0-exp(-7.0*delta))
+		if rooms.scene.has_depth(): camera.position = camera.position.round()
 	save_clock += delta
 	notice_clock = maxf(0,notice_clock-delta)
 	if save_clock>=3:
@@ -371,6 +375,8 @@ func safe_position(pos: Vector2) -> Vector2:
 	return Vector2(clampf(pos.x,ARENA.position.x+45,ARENA.end.x-45),clampf(pos.y,ARENA.position.y+45,ARENA.end.y-45))
 
 func random_spawn() -> Vector2:
+	if is_instance_valid(rooms.scene) and rooms.scene.has_method("nearby_spawn"):
+		return rooms.scene.nearby_spawn(player.global_position,rng)
 	var pos = ARENA.get_center()
 	for i in range(40):
 		pos = safe_position(Vector2(rng.randf_range(ARENA.position.x+80,ARENA.end.x-80),rng.randf_range(ARENA.position.y+80,ARENA.end.y-80)))
