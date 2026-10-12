@@ -422,6 +422,7 @@ func render_inventory() -> void:
 		if inventory_filter[2]>=0 and int(item.quality)!=inventory_filter[2]: continue
 		visible_count += 1
 		var r = row(inventory_rows,100,870)
+		r.set_meta("item_uid",str(item.uid))
 		var col = Color(C.COLORS[int(item.quality)])
 		icon(r,Rect2(15,21,54,54),int(item.slot),col)
 		var text = "%s%s +%d%s\n%s · %s · Lv.%d"%["[已穿戴] " if game.profile.is_equipped(item.uid) else "",game.profile.item_name(item),item.enhance," [锁]" if item.locked else "",C.QUALITIES[int(item.quality)],Data.ROLES[int(item.role)].name,item.level]

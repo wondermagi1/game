@@ -16,7 +16,7 @@ func run() -> void:
 	for role in range(3):
 		game.ui.show_menu()
 		var matching: Button
-		for b in game.ui.overlay.get_children():
+		for b in game.ui.overlay.find_children("*","Button",true,false):
 			if b is Button and b.get_meta("role_id",-1)==role: matching=b
 		check(is_instance_valid(matching),"menu role button "+str(role))
 		matching.pressed.emit()
