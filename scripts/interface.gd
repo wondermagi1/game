@@ -151,7 +151,7 @@ func show_menu() -> void:
 		actor.kind = id
 		actor.tint = col
 		var western = preload("res://scripts/western_art.gd")
-		var bounds: AABB = western.hero_mesh(western.HERO_PATHS[id],0).get_aabb()
+		var bounds: AABB = actor.frame_mesh().get_aabb() if id==0 else western.hero_mesh(western.HERO_PATHS[id],0).get_aabb()
 		var portrait_scale = minf(2.55,345.0/maxf(1,bounds.size.x))
 		actor.position = Vector2(207.5-(bounds.position.x+bounds.size.x*.5)*portrait_scale,375)
 		actor.scale = Vector2.ONE*portrait_scale
@@ -211,6 +211,27 @@ func show_equipment() -> void:
 
 func show_settings(in_run: bool) -> void:
 	super.show_settings(in_run)
+	# Compact the left column to give music and effects separate controls.
+	for child in overlay.get_children():
+		if child is CheckButton and child.position.x<1000:
+			child.position.y = 350 if child.position.y<450 else 435
+		elif child is Label and child.text=="音效音量": child.position.y = 530
+		elif child is HSlider and child.position.x<1000:
+			child.position.y = 580
+			child.name = "EffectsVolume"
+	label(overlay,"音乐音量",Rect2(160,640,600,45),30)
+	var music_slider = HSlider.new()
+	music_slider.name = "MusicVolume"
+	music_slider.position = Vector2(165,695)
+	music_slider.size = Vector2(750,40)
+	music_slider.max_value = 1.0
+	music_slider.step = .01
+	music_slider.value = game.sound.music_volume
+	music_slider.value_changed.connect(func(value):
+		game.sound.music_volume=value
+		game.sound.refresh_music_gain()
+		game.save_settings())
+	overlay.add_child(music_slider)
 	for rect in [Rect2(130,335,825,420),Rect2(1020,335,735,370)]:
 		var panel = box(overlay,rect,Color(.05,.10,.14,.94),EDGE)
 		overlay.move_child(panel,2)
@@ -218,7 +239,8 @@ func show_settings(in_run: bool) -> void:
 	for child in overlay.get_children():
 		if not child is HSlider: continue
 		var readout_pos: Vector2
-		if child.position.x<1000: readout_pos = Vector2(790,590)
+		if child.name=="MusicVolume": readout_pos = Vector2(790,640)
+		elif child.position.x<1000: readout_pos = Vector2(790,530)
 		elif child.position.y<550: readout_pos = Vector2(1560,375)
 		else: readout_pos = Vector2(1600,550)
 		var value_label = label(overlay,"%d%%"%roundi(child.value*100),Rect2(readout_pos,Vector2(115,45)),23,GOLD)

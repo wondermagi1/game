@@ -18,9 +18,33 @@ const BANK = {
 }
 var curated: Dictionary = {}
 var played_keys: Dictionary = {}
+var music_player: AudioStreamPlayer
+var music_volume: float = .4
+var music_fade: float = 0.0
+
+func start_music() -> void:
+	if music_player.playing: return
+	music_fade = 0.0
+	refresh_music_gain()
+	music_player.play()
+
+func refresh_music_gain() -> void:
+	if music_player==null: return
+	var gain = clampf(music_volume,0.0,1.0)*clampf(master_volume,0.0,1.0)
+	AudioServer.set_bus_mute(AudioServer.get_bus_index("Music"),gain<=0.0)
+	music_player.volume_db = linear_to_db(maxf(.0001,gain*music_fade))
 
 func _ready() -> void:
 	super._ready()
+	# One persistent stream spans menu, rooms, pause and results without restarting.
+	music_player = AudioStreamPlayer.new()
+	music_player.name = "BackgroundMusic"
+	music_player.bus = "Music"
+	var track = load("res://audio/music/moment-of-peace.mp3").duplicate() as AudioStreamMP3
+	track.loop = true
+	track.loop_offset = 0.0
+	music_player.stream = track
+	add_child(music_player)
 	for key in BANK:
 		var streams: Array[AudioStream] = []
 		for filename in BANK[key]: streams.append(load("res://audio/western/%s.wav"%filename))
@@ -66,6 +90,8 @@ func enemy_voice(kind: int) -> void:
 	else: play("monster_organic")
 
 func _process(delta: float) -> void:
+	music_fade = minf(1.0,music_fade+delta/.8)
+	refresh_music_gain()
 	for voice in foley:
 		if not voice.playing: continue
 		var remaining = float(voice.get_meta("remaining",1.0))-delta

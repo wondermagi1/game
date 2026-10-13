@@ -75,7 +75,7 @@ func run() -> void:
 	game.ui.show_settings(false)
 	await shot("04-settings")
 	for child in game.ui.overlay.get_children():
-		if child is HSlider and child.position.x<1000:
+		if child is HSlider and child.name=="EffectsVolume":
 			child.value = .37
 			check(is_equal_approx(game.sound.volume,.37),"sound slider keeps original callback")
 	game.sound.volume = 0

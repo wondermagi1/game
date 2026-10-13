@@ -8,7 +8,7 @@ var painted_frame: int = 0
 var pose_player: AnimationPlayer
 
 func _ready() -> void:
-	if not is_hero(): return
+	if not is_hero() or kind==0: return
 	pose_player = AnimationPlayer.new()
 	pose_player.name = "PaintedSkillAnimation"
 	pose_player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
@@ -43,6 +43,8 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func release_pose(slot: int) -> void:
+	# Sword keeps its original integrated artwork and animation timing.
+	if kind==0: return
 	# Normal casts release at 0.12 s; C retains its existing 0.22 s release phase.
 	if slot<3:
 		clip_time = clip_length*.28
@@ -52,6 +54,7 @@ func release_pose(slot: int) -> void:
 			pose_player.seek(.28,true)
 
 func muzzle_local() -> Vector2:
+	if is_hero() and kind==0: return super.muzzle_local()
 	if not is_hero(): return Vector2.ZERO
 	var distance: float = [58.0,71.0,65.0][kind]
 	return Vector2(aim.x*distance,-70+aim.y*18)+frame_offset()+gait_offset()
@@ -69,6 +72,10 @@ func painted_source() -> Dictionary:
 	return {"path":Western.HERO_PATHS[kind],"cell":row,"columns":6,"flip":false}
 
 func _draw() -> void:
+	# Player preference: restore the pre-western swordsman in every view.
+	if is_hero() and kind==0:
+		super._draw()
+		return
 	if enemy_id==14: draw_lulu(); return
 	if not is_hero():
 		draw_western_enemy()

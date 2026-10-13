@@ -139,6 +139,7 @@ func _ready() -> void:
 	ui.name = "Interface"
 	add_child(ui)
 	load_settings()
+	if not test_mode: sound.start_music()
 	ui.show_menu()
 	if not profile.notice.is_empty(): notify_player(profile.notice)
 
@@ -624,6 +625,7 @@ func save_settings() -> void:
 	bindings.save_config(config)
 	config.set_value("settings","master",sound.master_volume)
 	config.set_value("settings","volume",sound.volume)
+	config.set_value("settings","music",sound.music_volume)
 	config.set_value("settings","shake",screen_shake)
 	config.set_value("settings","numbers",show_numbers)
 	config.set_value("settings","effects",effects_intensity)
@@ -639,6 +641,7 @@ func load_settings() -> void:
 		bindings.load_config(config)
 		sound.master_volume = config.get_value("settings","master",1.0)
 		sound.volume = config.get_value("settings","volume",0.35)
+		sound.music_volume = clampf(float(config.get_value("settings","music",0.4)),0.0,1.0)
 		screen_shake = config.get_value("settings","shake",true)
 		show_numbers = config.get_value("settings","numbers",true)
 		effects_intensity = clampf(float(config.get_value("settings","effects",1.0)),0.2,1.0)
