@@ -5,7 +5,7 @@ var time: float=0
 var shader_material: ShaderMaterial
 func _ready() -> void:
 	z_index=1
-	water=ColorRect.new();water.position=Vector2(538,366);water.size=Vector2(844,368);water.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	water=ColorRect.new();water.position=Vector2(742,400);water.size=Vector2(435,245);water.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	shader_material=ShaderMaterial.new();shader_material.shader=preload("res://art/v6/spring_water.gdshader");water.material=shader_material;add_child(water)
 func _process(delta: float) -> void:
 	if room.run==null:return

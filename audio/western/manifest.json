@@ -1,0 +1,203 @@
+{
+  "processing": "Mono PCM16 44100 Hz; DC removal; resample with anti-alias filter; trim; 2 ms attack/30 ms fade; peak -9.12 dBFS",
+  "files": [
+    {
+      "file": "sword_0.wav",
+      "source": "battle/battle_sound_effects/swish_2.wav",
+      "source_sha256": "690725fd44a99a4abd32d59c0efe8e28486afb564d3f5710cca75a2c786cf0f1",
+      "start_seconds": null,
+      "max_seconds": 0.35,
+      "seconds": 0.184,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "sword_1.wav",
+      "source": "battle/battle_sound_effects/swish_3.wav",
+      "source_sha256": "7767c7b6ba063d8d5de6e05ba29c037af5c4a19d02b00b6b5ff398f72732e1c9",
+      "start_seconds": null,
+      "max_seconds": 0.35,
+      "seconds": 0.35,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "sword_2.wav",
+      "source": "battle/battle_sound_effects/swish_4.wav",
+      "source_sha256": "a53382f21d9c7e4d7a1d6e8cddc9ce9779740f9ad2ba4d9012ee20318c04f24c",
+      "start_seconds": null,
+      "max_seconds": 0.35,
+      "seconds": 0.2412,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "bow.wav",
+      "source": "battle/battle_sound_effects/Bow.wav",
+      "source_sha256": "0dc8cf132cf583563936ac3a4d776e196210d5f6703b4ebdd7c68e8f35b9f3e3",
+      "start_seconds": null,
+      "max_seconds": 0.4,
+      "seconds": 0.234,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "gun_0.wav",
+      "source": "black-powder.wav",
+      "source_sha256": "495eadf1c1e41a1264ff75f08a58de9004b3f9792391a174d70fc5c796c41744",
+      "start_seconds": 0.13,
+      "max_seconds": 0.34,
+      "seconds": 0.34,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "gun_1.wav",
+      "source": "black-powder.wav",
+      "source_sha256": "495eadf1c1e41a1264ff75f08a58de9004b3f9792391a174d70fc5c796c41744",
+      "start_seconds": 0.83,
+      "max_seconds": 0.34,
+      "seconds": 0.34,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "gun_2.wav",
+      "source": "black-powder.wav",
+      "source_sha256": "495eadf1c1e41a1264ff75f08a58de9004b3f9792391a174d70fc5c796c41744",
+      "start_seconds": 1.53,
+      "max_seconds": 0.34,
+      "seconds": 0.34,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "gun_heavy.wav",
+      "source": "black-powder.wav",
+      "source_sha256": "495eadf1c1e41a1264ff75f08a58de9004b3f9792391a174d70fc5c796c41744",
+      "start_seconds": 2.25,
+      "max_seconds": 0.56,
+      "seconds": 0.56,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "magic_charge.wav",
+      "source": "rpg/RPG Sound Pack/battle/spell.wav",
+      "source_sha256": "61d79416a7cbb04e1f46618ded72386f82bb6bd9dc170170480d271f4efb3958",
+      "start_seconds": null,
+      "max_seconds": 0.75,
+      "seconds": 0.75,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "magic_release.wav",
+      "source": "rpg/RPG Sound Pack/battle/magic1.wav",
+      "source_sha256": "cadea162f3fe91c27666ab2a0516fa3bf156997d92d4f8145919126bca7b1e8a",
+      "start_seconds": null,
+      "max_seconds": 0.7,
+      "seconds": 0.6089,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "metal_hit.wav",
+      "source": "rpg/RPG Sound Pack/battle/sword-unsheathe3.wav",
+      "source_sha256": "4a1a54402789bd08278c332086ed427805dc5d42c3e7c3fce0f30d1e19e20c91",
+      "start_seconds": null,
+      "max_seconds": 0.3,
+      "seconds": 0.3,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "body_hit.wav",
+      "source": "rpg/RPG Sound Pack/inventory/wood-small.wav",
+      "source_sha256": "679184e2a0c37e68450f8f2b511daca8ce187af306789215197dc73c0193386e",
+      "start_seconds": null,
+      "max_seconds": 0.2,
+      "seconds": 0.2,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "reload_0.wav",
+      "source": "rpg/RPG Sound Pack/inventory/metal-small1.wav",
+      "source_sha256": "8ebfaf55f946fd2af5086c333551dfc7c774a908759022081010c32085d600b3",
+      "start_seconds": null,
+      "max_seconds": 0.23,
+      "seconds": 0.1499,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "reload_1.wav",
+      "source": "rpg/RPG Sound Pack/inventory/metal-small2.wav",
+      "source_sha256": "19c13a87e0f241cf05417506760d32eb1e2a61dc77c7798ea86b22fa9260f596",
+      "start_seconds": null,
+      "max_seconds": 0.23,
+      "seconds": 0.1611,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "coin.wav",
+      "source": "rpg/RPG Sound Pack/inventory/coin.wav",
+      "source_sha256": "ee72adacc8630cb590f22130a9c7c855f6eeb698d9fce6461667255ec45ed184",
+      "start_seconds": null,
+      "max_seconds": 0.55,
+      "seconds": 0.55,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "dash.wav",
+      "source": "rpg/RPG Sound Pack/inventory/cloth.wav",
+      "source_sha256": "d829b5ed7a47086771c639495713498e44ce28814f4ea6ddf30cb1f18c085c3f",
+      "start_seconds": null,
+      "max_seconds": 0.24,
+      "seconds": 0.24,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "monster_organic.wav",
+      "source": "rpg/RPG Sound Pack/NPC/ogre/ogre2.wav",
+      "source_sha256": "d2d27137448f24471cd401d8248920d8a2e9b903a097be7629b5c1927cd69daa",
+      "start_seconds": null,
+      "max_seconds": 0.5,
+      "seconds": 0.4954,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "monster_heavy.wav",
+      "source": "rpg/RPG Sound Pack/NPC/giant/giant1.wav",
+      "source_sha256": "e9aeb6012c03fb426019f8d485d0da8a6aaf2e46499acd3636afe05966cd752e",
+      "start_seconds": null,
+      "max_seconds": 0.65,
+      "seconds": 0.4846,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "monster_insect.wav",
+      "source": "rpg/RPG Sound Pack/NPC/beetle/bite-small.wav",
+      "source_sha256": "bc0e9d150aaf71aefa99111cfff90ca1deea5e72fb31c7371df75288d74ab2b5",
+      "start_seconds": null,
+      "max_seconds": 0.28,
+      "seconds": 0.28,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "bubble.wav",
+      "source": "rpg/RPG Sound Pack/inventory/bubble.wav",
+      "source_sha256": "c5f15d81e2b169784b737d31876ef67eb6957232f3e9c8186dde12c2370c822e",
+      "start_seconds": null,
+      "max_seconds": 0.32,
+      "seconds": 0.32,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "splash.wav",
+      "source": "rpg/RPG Sound Pack/inventory/bubble2.wav",
+      "source_sha256": "fea5d8f0049a71b0a73b3086271fc18d0b5d733965b53fbfe550b6de26b1bef9",
+      "start_seconds": null,
+      "max_seconds": 0.4,
+      "seconds": 0.3137,
+      "peak_dbfs": -9.12
+    },
+    {
+      "file": "ui_click.wav",
+      "source": "rpg/RPG Sound Pack/interface/interface1.wav",
+      "source_sha256": "89290b137f013eb02f7f192069c7e3819a71cb87f56ce3832544cd49d410d5f8",
+      "start_seconds": null,
+      "max_seconds": 0.1,
+      "seconds": 0.1,
+      "peak_dbfs": -9.12
+    }
+  ]
+}

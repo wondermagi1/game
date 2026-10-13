@@ -45,6 +45,8 @@ var action_recovery: float = 0.0
 var attack_buffer: float = 0.0
 var skill_buffer: int = -1
 var skill_buffer_time: float = 0.0
+var skill_windup_slot: int = -1
+var skill_windup_time: float = 0.0
 var scripted_movement := Vector2.ZERO
 @export var dash_duration: float = 0.18
 @export var dash_cooldown: float = 1.4
@@ -83,6 +85,12 @@ func reload_duration() -> float:
 
 func _physics_process(delta: float) -> void:
 	if game.state != "combat" or dead: return
+	if skill_windup_slot>=0:
+		skill_windup_time -= delta
+		if skill_windup_time<=0:
+			var release_slot = skill_windup_slot
+			skill_windup_slot = -1
+			use_skill(release_slot)
 	attack_clock = maxf(0,attack_clock-delta)
 	action_recovery = maxf(0,action_recovery-delta)
 	attack_buffer = maxf(0,attack_buffer-delta)
@@ -156,6 +164,7 @@ func dash(movement: Vector2) -> bool:
 	attack_buffer = 0
 	skill_buffer = -1
 	skill_buffer_time = 0
+	cancel_skill_windup()
 	if reload_time>0: reload_time = 0
 	game.telemetry.dodges += 1
 	dash_direction = movement.normalized() if movement.length()>0 else aim
@@ -227,7 +236,9 @@ func attack() -> bool:
 
 func use_skill(slot: int = 0) -> bool:
 	var used = skills.use(slot)
-	if used: action_recovery = maxf(action_recovery,0.30 if slot==3 else 0.14)
+	if used:
+		visual.release_pose(slot)
+		action_recovery = maxf(action_recovery,0.30 if slot==3 else 0.14)
 	return used
 
 func request_attack() -> bool:
@@ -240,7 +251,8 @@ func request_attack() -> bool:
 
 func request_skill(slot: int) -> bool:
 	if slot<0 or slot>3: return false
-	if action_recovery<=0 and use_skill(slot):
+	if skill_windup_slot>=0: return false
+	if action_recovery<=0 and begin_skill_windup(slot):
 		skill_buffer = -1
 		skill_buffer_time = 0
 		return true
@@ -251,13 +263,30 @@ func request_skill(slot: int) -> bool:
 		skill_buffer_time = 0.22
 	return false
 
+func begin_skill_windup(slot: int) -> bool:
+	if skill_windup_slot>=0 or game.state!="combat" or dead or not skills.unlocked(slot) or skills.cooldowns[slot]>0: return false
+	# C already has an authored gather/release controller. Normal skills receive
+	# a short responsive preparation, then their existing gameplay runs exactly once.
+	if slot==3: return use_skill(slot)
+	skill_windup_slot = slot
+	skill_windup_time = .12
+	action_recovery = maxf(action_recovery,.12)
+	visual.aim = aim
+	visual.play_gesture("skill_%d"%slot,.45)
+	return true
+
+func cancel_skill_windup() -> void:
+	# A cancelled preparation spends no cooldown and never fires in the next room.
+	skill_windup_slot = -1
+	skill_windup_time = 0
+
 func tick_action_buffers() -> void:
 	if action_recovery>0: return
 	if skill_buffer>=0 and skill_buffer_time>0 and skills.cooldowns[skill_buffer]<=0:
 		var slot = skill_buffer
 		skill_buffer = -1
 		skill_buffer_time = 0
-		use_skill(slot)
+		begin_skill_windup(slot)
 		return
 	if attack_buffer>0 and attack_clock<=0 and reload_time<=0:
 		attack_buffer = 0
@@ -295,6 +324,7 @@ func hurt(raw: float) -> void:
 		else:
 			hp = 0
 			dead = true
+			cancel_skill_windup()
 			visual.dying = true
 			game.end_run(false)
 
@@ -315,6 +345,7 @@ func on_kill(enemy = null) -> void:
 		heal_clock = 0.7
 
 func stage_reset() -> void:
+	cancel_skill_windup()
 	global_position = Vector2(960,750)
 	invulnerable = 1.2
 	dash_clock = 0

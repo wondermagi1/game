@@ -367,6 +367,8 @@ func hurt(raw: float, critical: bool = false, apply_status: bool = true, source:
 		game.fx.ring(global_position,radius+24,Color("#86cdec"))
 	game.fx.number(global_position,amount,Color("#ffe0a4") if critical else Color("#e7f1fa"),critical,.07 if heavy else 0.0)
 	visual.flash = 0.09
+	if apply_status and amount>0:
+		game.sound.play("hit_metal" if kind in [3,4,6,12] else "hit_flesh")
 	if apply_status:
 		knockback = game.player.global_position.direction_to(global_position)*(45 if is_boss() else 120)
 		var stats = game.player.stats
@@ -390,7 +392,7 @@ func die() -> void:
 	game.enemy_defeated(self)
 	game.player.on_kill(self)
 	game.fx.burst(global_position,visual.tint,18 if is_boss() else 8)
-	game.sound.play("hit")
+	game.sound.enemy_voice(kind)
 	if elite_modifiers.has("volatile"):
 		game.add_hazard(global_position,125,0.85,damage*1.25)
 		game.explode(global_position,125,damage*0.8,false)

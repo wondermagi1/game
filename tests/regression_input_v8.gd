@@ -49,6 +49,8 @@ func run() -> void:
 	check(p.skill_buffer==0 and p.skill_buffer_time>0,"skill buffer records requested slot")
 	p.action_recovery = 0
 	p.tick_action_buffers()
+	check(p.skill_windup_slot==0 and p.skills.cooldowns[0]==0,"buffered skill begins preparation before spending cooldown")
+	p._physics_process(.121)
 	check(p.skills.cooldowns[0]>0,"buffered skill casts when recovery ends")
 	check(p.skill_buffer==-1,"successful buffered skill clears queue")
 
@@ -58,6 +60,7 @@ func run() -> void:
 	p.skills.cooldowns[1] = 0
 	p.action_recovery = 0
 	p.tick_action_buffers()
+	p._physics_process(.121)
 	check(p.skills.cooldowns[1]>0,"near-cooldown buffer casts on readiness")
 	p.skill_buffer = -1
 	p.skill_buffer_time = 0
@@ -83,6 +86,25 @@ func run() -> void:
 	p.action_recovery = 0
 	check(p.request_attack(),"free action fires immediately")
 	check(not p.request_attack() and p.attack_buffer>0,"repeat attack during cadence is buffered")
+
+	# Cancelling a preparation must not produce a late skill or spend a cooldown.
+	for role in range(3):
+		setup_role(role)
+		p = game.player
+		p.action_recovery = 0
+		p.skills.cooldowns[0] = 0
+		check(p.request_skill(0),"role %d begins skill preparation"%role)
+		check(p.dash(Vector2.RIGHT),"role %d can dodge out of preparation"%role)
+		p._physics_process(.15)
+		check(p.skill_windup_slot==-1 and p.skills.cooldowns[0]==0,"role %d dodge cancels without late cast"%role)
+		p.action_recovery = 0
+		p.request_skill(0)
+		game.rooms.enter(game.rooms.current().id)
+		p._physics_process(.15)
+		check(p.skill_windup_slot==-1 and p.skills.cooldowns[0]==0,"role %d room transition cancels pending skill"%role)
+		p.action_recovery = 0
+		check(p.request_skill(3),"role %d ultimate retains its existing release controller"%role)
+		for frame in range(30): await physics_frame
 
 	var report = {"checks":checks,"failures":failures}
 	var file = FileAccess.open("res://tests/regression_input_v8_results.json",FileAccess.WRITE)

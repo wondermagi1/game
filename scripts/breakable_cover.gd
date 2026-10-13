@@ -20,8 +20,4 @@ func hurt(amount: float) -> void:
 	room.destroy_crate(self)
 	queue_free()
 func _draw() -> void:
-	draw_rect(Rect2(-32,-24,65,65),Color(0,0,0,0.4))
-	draw_rect(Rect2(-32,-32,65,65),Color("#75583d"))
-	draw_rect(Rect2(-27,-27,55,55),Color("#b99467"),false,5)
-	draw_line(Vector2(-25,-25),Vector2(25,25),Color("#b99467"),5)
-	draw_line(Vector2(-25,25),Vector2(25,-25),Color("#b99467"),5)
+	preload("res://scripts/western_art.gd").prop(self,9,Rect2(-33,-38,66,76),Color.WHITE,false)

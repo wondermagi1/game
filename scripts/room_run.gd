@@ -36,6 +36,9 @@ func stop() -> void:
 	clear_scene()
 	data.clear()
 func enter(id: String, from_id: String = "") -> void:
+	game.player.cancel_skill_windup()
+	game.player.skill_buffer = -1
+	game.player.attack_buffer = 0
 	game.flow.capybara = bool(data.get("capybara",false))
 	game.collect_loot(true)
 	game.clear_attacks()
@@ -103,7 +106,7 @@ func enter(id: String, from_id: String = "") -> void:
 	elif first_visit and r.kind=="event":
 		game.notify_player("靠近房间中央，按 %s 与%s交互。"%[game.bindings.text("interact"),Graph.EVENT_NAMES[r.event]],5)
 	if r.id=="r2" and data.rooms.has("secret") and not data.revealed:
-		game.notify_player("北墙有三道发光裂纹：靠近北墙，连续唤醒三枚符纹可开启镜渊。",6)
+		game.notify_player("北侧有三座古代符文石：靠近后连续唤醒三枚符文，可开启镜渊。",6)
 	game.queue_redraw()
 func spawn_wave() -> void:
 	var r = current()
@@ -286,7 +289,7 @@ func draw_objective() -> void:
 			var color = Color("#81dfcf") if objective_state.hp>35 else Color("#ff8b89")
 			game.draw_circle(center,44,Color(color,0.16))
 			game.draw_arc(center,54,-PI/2,-PI/2+TAU*float(objective_state.hp)/float(objective_state.max_hp),48,color,6,true)
-			game.draw_colored_polygon(PackedVector2Array([center+Vector2(0,-38),center+Vector2(30,18),center+Vector2(0,38),center+Vector2(-30,18)]),Color(color,0.65))
+			preload("res://scripts/western_art.gd").prop(game,2,Rect2(center-Vector2(60,92),Vector2(120,132)))
 		"hunt":
 			if is_instance_valid(objective_target):
 				for i in range(3): game.draw_arc(objective_target.global_position,objective_target.radius+13+i*6,0,TAU,32,Color("#f2cf6c"),2,true)

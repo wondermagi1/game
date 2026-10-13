@@ -150,8 +150,11 @@ func show_menu() -> void:
 		var actor = Visual.new()
 		actor.kind = id
 		actor.tint = col
-		actor.position = Vector2(208,375)
-		actor.scale = Vector2.ONE*2.55
+		var western = preload("res://scripts/western_art.gd")
+		var bounds: AABB = western.hero_mesh(western.HERO_PATHS[id],0).get_aabb()
+		var portrait_scale = minf(2.55,345.0/maxf(1,bounds.size.x))
+		actor.position = Vector2(207.5-(bounds.position.x+bounds.size.x*.5)*portrait_scale,375)
+		actor.scale = Vector2.ONE*portrait_scale
 		actor.aim = Vector2(.95,.15)
 		actor.quality = 3 if game.profile.set_count(id)>=6 else 1
 		card.add_child(actor)

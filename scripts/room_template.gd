@@ -1,5 +1,6 @@
 @tool
 extends Node2D
+const Western = preload("res://scripts/western_art.gd")
 ## Editable room templates. Collision rectangles are authored in each .tscn.
 @export_range(0,5) var theme: int = 0
 @export var layout_name: String = "开阔庭院"
@@ -17,14 +18,20 @@ var navigation = AStarGrid2D.new()
 var font = SystemFont.new()
 const COLORS = [Color("#79ccb5"),Color("#caaa79"),Color("#b09bcf"),Color("#ce8b9e"),Color("#d99a65"),Color("#929de0")]
 const SCENE_BACKGROUNDS = [
-	"res://art/v10/scenes/chapter_01_jade_courtyard.png",
-	"res://art/v10/scenes/chapter_02_emberwood_foundry.png",
-	"res://art/v10/scenes/chapter_03_runic_archive.png",
-	"res://art/v10/scenes/chapter_04_crimson_shrine.png",
-	"res://art/v10/scenes/chapter_05_meridian_engine.png",
-	"res://art/v10/scenes/chapter_06_starfall_observatory.png"
+	"res://art/western/chapter_01.png",
+	"res://art/western/chapter_02.png",
+	"res://art/western/chapter_03.png",
+	"res://art/western/chapter_04.png",
+	"res://art/western/chapter_05.png",
+	"res://art/western/chapter_06.png"
 ]
 var scene_background: Texture2D
+var prompt_refresh: float = 0
+func _process(delta: float) -> void:
+	prompt_refresh += delta
+	if prompt_refresh>=.12:
+		prompt_refresh = 0
+		if not event_name.is_empty(): queue_redraw()
 func _ready() -> void:
 	font.font_names = PackedStringArray(["Microsoft YaHei UI","Microsoft YaHei"])
 	load_scene_art()
@@ -126,64 +133,42 @@ func _draw() -> void:
 				draw_texture_rect_region(atlas,Rect2(p,Vector2(445,395)),region,Color(.64,.69,.73,.73))
 	if run!=null and run.data.get("capybara",false): draw_onsen()
 	for rect in obstacles:
-		draw_rect(Rect2(rect.position+Vector2(9,13),rect.size),Color(0,0,0,0.42))
-		draw_rect(rect,c.darkened(0.78))
-		draw_rect(rect.grow(-6),c.darkened(0.55))
-		draw_rect(Rect2(rect.position+Vector2(7,7),Vector2(rect.size.x-14,maxf(8,rect.size.y*.18))),Color(c.lightened(.15),.42))
-		draw_line(rect.position+Vector2(7,rect.size.y-8),rect.end-Vector2(7,8),Color(c.darkened(.75),.75),5)
-		draw_arc(rect.get_center(),minf(28,rect.size.y*.22),0,TAU,8+theme*2,Color(c,.56),2,true)
-	draw_rect(Rect2(70,160,1780,790),Color(c,0.34),false,3)
+		# Crates render their own painted sprite; never place a stone block underneath.
+		if rect.size==Vector2(65,65): continue
+		Western.obstacle(self,rect)
 	for door in doors:
 		var dir = Vector2(door.dir[0],door.dir[1])
 		var p = portal(dir)
 		var col = c if cleared else Color("#da7386")
-		draw_line(p-dir*90,p+dir*10,Color(col,0.22),100)
-		draw_arc(p-dir*30,45,0,TAU,6,col,3,true)
-		var label_pos = p-dir*120+Vector2(-55,-20)
-		draw_string(font,label_pos,str(door.label) if cleared else "战斗封锁",HORIZONTAL_ALIGNMENT_LEFT,-1,20,col)
+		var center = p-dir*45
+		center.y = clampf(center.y,220,866)
+		Western.prop(self,6 if cleared else 7,Rect2(center-Vector2(54,68),Vector2(108,136)))
+		world_label(center+Vector2(0,87),str(door.label) if cleared else "战斗封锁",col,18)
 	if not event_name.is_empty():
 		var p = Vector2(960,540)
-		var col = c.darkened(0.5) if event_used else Color("#f1d28e")
-		draw_rect(Rect2(p-Vector2(38,22),Vector2(76,52)),col.darkened(0.6))
-		draw_arc(p,48,0,TAU,6,col,3,true)
-		draw_circle(p,12,col)
-		draw_string(font,p+Vector2(-95,-70),event_name+(" · 已使用" if event_used else ""),HORIZONTAL_ALIGNMENT_LEFT,-1,23,col)
+		var event = str(run.current().event) if run!=null else "chest"
+		Western.prop(self,Western.event_cell(event,event_used),Rect2(p-Vector2(83,112),Vector2(166,158)),Color("#b2b9c2") if event_used else Color.WHITE)
+		world_label(p+Vector2(0,-130),event_name+(" · 已使用" if event_used else ""),Color("#b3bfca") if event_used else Color("#f1d28e"),22)
+		if not event_used and run!=null and is_instance_valid(run.game.player) and to_local(run.game.player.global_position).distance_to(p)<160:
+			world_label(p+Vector2(155,25),"按 %s 交互"%run.game.bindings.text("interact"),Color("#edf3f7"),18)
 	if clue:
 		for i in range(3):
-			var p = Vector2(900+i*60,193)
-			var color = Color("#98efcd") if i<clue_count else Color("#a391d4")
-			draw_arc(p,17,0,TAU,4,color,2)
-			draw_line(p-Vector2(0,14),p+Vector2(0,14),color,3)
-		draw_string(font,Vector2(830,242),"裂纹中有三道微光 · 靠近交互",HORIZONTAL_ALIGNMENT_LEFT,-1,18,Color("#b9abd7"))
+			var p = Vector2(900+i*60,216)
+			Western.prop(self,8,Rect2(p-Vector2(22,32),Vector2(44,64)),Color.WHITE if i<clue_count else Color("#677586"))
+		world_label(Vector2(960,280),"古代符文石 %d / 3 · 靠近交互"%clue_count,Color("#c8bce9"),18)
+
+func world_label(center: Vector2, text_value: String, color: Color, font_size: int) -> void:
+	var width = font.get_string_size(text_value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x
+	var plate = StyleBoxFlat.new()
+	plate.bg_color = Color(.025,.045,.065,.86)
+	plate.set_corner_radius_all(5)
+	draw_style_box(plate,Rect2(center-Vector2(width*.5+10,23),Vector2(width+20,32)))
+	draw_string(font,center-Vector2(width*.5,0),text_value,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,color)
 
 func draw_onsen() -> void:
-	draw_rect(Rect2(75,165,1770,780),Color("#665e4c"))
-	for row in range(8):
-		for col in range(18):
-			var pos = Vector2(85+col*97+(row%2)*12,175+row*96)
-			draw_style_box(stone_style(),Rect2(pos,Vector2(90,88)))
-			draw_texture_rect_region(preload("res://scripts/presentation.gd").FLOORS,Rect2(pos+Vector2(5,5),Vector2(80,78)),Rect2(35+(col%3)*60,30+(row%3)*75,110,110),Color(.83,.78,.65,.65))
-	draw_set_transform(Vector2(960,550),0,Vector2(1.8,.8))
-	draw_circle(Vector2.ZERO,235,Color("#867760"))
-	draw_circle(Vector2.ZERO,220,Color("#689f9b"))
-	for r in [90,145,205]: draw_arc(Vector2.ZERO,r,0,TAU,64,Color(.7,.91,.83,.30),2,true)
-	draw_set_transform(Vector2.ZERO)
-	for side in [0,1]:
-		for i in range(5):
-			var pos = Vector2(300+i*315,235+side*635)
-			draw_circle(pos,21,Color("#67866b"))
-			draw_circle(pos+Vector2(13,-9),15,Color("#8baa7c"))
-			draw_circle(pos+Vector2(-12,2),12,Color("#bad69a"))
-	draw_string(font,Vector2(780,325),"噜噜温泉 · 浅水可通行",HORIZONTAL_ALIGNMENT_LEFT,-1,27,Color("#e9e2b9"))
-var stone: StyleBoxFlat
-func stone_style() -> StyleBoxFlat:
-	if stone==null:
-		stone = StyleBoxFlat.new()
-		stone.bg_color = Color("#8b8472")
-		stone.border_color = Color("#a6a18a")
-		stone.set_border_width_all(2)
-		stone.set_corner_radius_all(15)
-	return stone
+	draw_texture_rect(Western.texture("res://art/western/spring.png"),Rect2(0,0,1920,1080),false)
+	world_label(Vector2(960,320),"噜噜的魔法温泉 · 浅水可通行",Color("#e9e2b9"),24)
+
 func add_crates(broken_ids: Array) -> void:
 	for i in range(2):
 		var id = "crate_%d"%i

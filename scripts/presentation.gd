@@ -3,7 +3,7 @@ extends RefCounted
 const HEROES = preload("res://art/v5/heroes.png")
 const ENEMIES = preload("res://art/v5/enemies-cute.png")
 const LULU = preload("res://art/v5/lulu.png")
-const BACKGROUND = preload("res://art/v5/menu.png")
+const BACKGROUND = preload("res://art/western/chapter_01.png")
 const FLOORS = preload("res://art/v5/floors.png")
 const ROLES = [
 	{"id":0,"word":"御剑","name":"剑修","color":Color("#8ee4ce"),"tag":"剑意流转 · 贯穿与剑阵","front":Rect2(120,0,430,516),"back":Rect2(120,516,430,508)},
