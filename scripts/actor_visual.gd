@@ -90,7 +90,7 @@ func draw_western_enemy() -> void:
 	var alpha = 1-death_time
 	draw_set_transform(Vector2(0,8),0,Vector2(1,.30))
 	draw_circle(Vector2.ZERO,30,Color(0,0,0,.28*alpha))
-	draw_set_transform(Vector2(0,8 if reduced else 8-absf(sin(clock*6))*walking*1.3),0,Vector2(-1 if aim.x<0 else 1,1)*height/126.0)
+	draw_set_transform(Vector2(0,8.0 if reduced else 8.0-absf(sin(clock*6))*walking*1.3),0,Vector2(-1 if aim.x<0 else 1,1)*height/126.0)
 	var light = 1.25 if flash>0 else 1.0
 	draw_mesh(Western.hero_mesh(Western.MONSTER_PATH,Western.MONSTER_CELLS[id]),Western.texture(Western.MONSTER_PATH),Transform2D.IDENTITY,Color(light,light,light,alpha))
 	draw_set_transform(Vector2.ZERO)

@@ -54,7 +54,7 @@ static func region(path: String, cell: int, columns: int, rows: int) -> Rect2:
 	var key = path+":"+str(cell)
 	if not regions.has(key):
 		var tex = texture(path)
-		var dims = Vector2i(tex.get_size())/Vector2i(columns,rows)
+		var dims = Vector2i(floori(tex.get_width()/float(columns)),floori(tex.get_height()/float(rows)))
 		var origin = Vector2i(cell%columns,floori(float(cell)/columns))*dims
 		if not images.has(path): images[path] = tex.get_image()
 		var img: Image = images[path]
