@@ -10,7 +10,7 @@ const BANK = {
 	"ultimate_0_start":["magic_charge"],"ultimate_0_loop":["sword_0","sword_1"],"ultimate_0_finish":["magic_release"],
 	"ultimate_1_start":["reload_1"],"ultimate_1_loop":["gun_0","gun_2"],"ultimate_1_finish":["gun_heavy"],
 	"ultimate_2_start":["magic_charge"],"ultimate_2_loop":["bow"],"ultimate_2_finish":["magic_release"],
-	"skill":["magic_release"],"reward":["coin"],"forge":["metal_hit"],"train":["magic_release"],
+	"reward":["coin"],"forge":["metal_hit"],"train":["magic_release"],
 	"monster_organic":["monster_organic"],"monster_heavy":["monster_heavy"],"monster_insect":["monster_insect"],
 	"boss":["monster_heavy"],"boss_intro":["magic_charge"],"boss_finish":["magic_release"],
 	"ui_hover":["ui_click"],"ui_click":["ui_click"],"ui_confirm":["coin"],
@@ -53,6 +53,8 @@ func _ready() -> void:
 func play(key: String) -> void:
 	if volume*master_volume<=0: return
 	if not curated.has(key):
+		# The shared skill cue deliberately uses the earlier 0.12 s sound.gd clip.
+		# Do not layer the western magic_release rumble over every role's cast.
 		super.play(key)
 		return
 	var ui_sound = key.begins_with("ui_") or key in ["reward","forge","train"]

@@ -38,11 +38,17 @@ func skill_cast(role: int, slot: int, origin: Vector2, center: Vector2, directio
 			elif slot==1: emit("hunt",center,direction,240*power,.7,2)
 			else: emit("hunt",center,direction,340*power,1.0,2)
 
-func zone_anticipation(pos: Vector2, radius: float, kind: String, duration: float) -> void:
+func zone_anticipation(pos: Vector2, radius: float, kind: String, duration: float, role: int) -> void:
 	if kind in ["arrows","v7_storm","storm"]: emit("rain",pos,Vector2.DOWN,radius,maxf(.15,duration),2)
 	elif kind in ["swords","v7_array"]: emit("rain",pos,Vector2.DOWN,radius,maxf(.15,duration),0)
 	elif kind=="blade": emit("slash",pos,game.player.aim,radius*1.8,maxf(.15,duration),0)
-	elif kind in ["v7_trap","echo"]: emit("hunt",pos,Vector2.UP,radius*1.5,maxf(.3,duration),2)
+	elif kind=="echo":
+		# Rank-five echoes are shared mechanics, not ranger-only nature magic.
+		match role:
+			0: emit("slash",pos,game.player.aim,radius*1.8,maxf(.3,duration),0)
+			1: emit("blast",pos,Vector2.UP,radius,maxf(.3,duration),1)
+			2: emit("hunt",pos,Vector2.UP,radius*1.5,maxf(.3,duration),2)
+	elif kind=="v7_trap": emit("hunt",pos,Vector2.UP,radius*1.5,maxf(.3,duration),2)
 	elif kind=="v7_fire": emit("blast",pos,Vector2.UP,radius,.52,1)
 func _draw() -> void:
 	for g in glyphs:
@@ -109,7 +115,8 @@ func _draw() -> void:
 			"blast":
 				draw_set_transform(g.p)
 				if g.role==1: Detail.explosion(self,Vector2.ZERO,g.size,progress)
-				else: Detail.sequence(self,"nature_bloom",Vector2.ZERO,Vector2.ONE*g.size*1.5,progress)
+				elif g.role==2: Detail.sequence(self,"nature_bloom",Vector2.ZERO,Vector2.ONE*g.size*1.5,progress)
+				else: Detail.sequence(self,"sword_wave",Vector2.ZERO,Vector2.ONE*g.size*1.5,progress)
 			"reload":
 				draw_set_transform(g.p)
 				Detail.rune(self,Vector2.ZERO,Vector2(g.size*1.8,g.size*1.0),-progress*.7,(1-progress)*.6)
