@@ -28,6 +28,9 @@ func display_offset() -> Vector2:
 var exclude: Array[RID] = []
 var tint = Color.WHITE
 
+func _ready() -> void:
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+
 func _physics_process(delta: float) -> void:
 	if game.state != "combat" or gone: return
 	lifetime += delta
@@ -134,17 +137,21 @@ func _draw() -> void:
 		draw_circle(Vector2(-4,-4),3,Color("#f0fffa"))
 		return
 	if body_length>0:
-		preload("res://scripts/skill_art.gd").weapon(self,style,body_length,hit_width*0.6,tint)
+		if style==1:
+			# Projectile reach belongs to collision; it must not stretch the sprite.
+			preload("res://scripts/skill_textures.gd").bullet(self,18 if source=="rapid" else 16)
+		else:
+			preload("res://scripts/skill_art.gd").weapon(self,style,body_length,hit_width*0.6,tint)
 		return
 	if enemy_shot:
 		draw_circle(Vector2.ZERO,9,Color("#ff657c"))
 		draw_circle(Vector2(-2,-2),4,Color("#ffe2be"))
 	elif explosion > 0:
-		preload("res://scripts/skill_textures.gd").grenade(self,42,lifetime*3)
+		preload("res://scripts/skill_textures.gd").grenade(self,30,lifetime*1.5)
 	elif style == 0:
 		preload("res://scripts/skill_art.gd").weapon(self,0,58,3,Color.WHITE)
 	elif style == 1:
-		preload("res://scripts/skill_textures.gd").bullet(self,46 if empowered else 34)
+		preload("res://scripts/skill_textures.gd").bullet(self,16 if empowered else 14)
 	else:
 		preload("res://scripts/skill_art.gd").weapon(self,2,54,2,Color.WHITE)
 
@@ -173,7 +180,9 @@ func wide_step(endpoint: Vector2, step: float) -> void:
 		pierce -= 1
 		game.art.emit("slash" if style==0 else "blast",enemy.global_position,direction,60,0.25,style)
 		if pierce<=0: finish(); return
-	game.fx.streak(global_position-direction*body_length*0.4+display_offset(),endpoint+display_offset(),tint,hit_width if style==1 else hit_width*.4)
+	# Limit firearm wake width independently of damage radius and piercing reach.
+	var trail_length: float = 10.0 if style==1 else body_length*.4
+	game.fx.streak(global_position-direction*trail_length+display_offset(),endpoint+display_offset(),tint,2.0 if style==1 else hit_width*.4)
 	global_position = endpoint
 	rotation = direction.angle()
 	remaining -= step

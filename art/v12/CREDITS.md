@@ -1,6 +1,8 @@
 # Skill VFX resources
 
-All newly downloaded source packs used here are marked CC0 on their original pages, retrieved 2026-10-13. License: https://creativecommons.org/publicdomain/zero/1.0/
+Downloaded source packs listed below are marked CC0 on their original pages, retrieved 2026-10-13. License: https://creativecommons.org/publicdomain/zero/1.0/
+
+**2026-10-14 gunner revision:** `gunner-fantasy/runic-shot.png` and `gunner-fantasy/powder-orb.png` were generated with the built-in image_gen tool on transparent backgrounds and copied unchanged into this project. They are AI-generated project assets, not downloaded CC0 artwork. Exact prompts and output identifiers are in `gunner-fantasy/prompts.json`. The earlier Kenney bullet/grenade renders and dirkwybe explosion atlas below are retained for historical provenance but are no longer used by the runtime drawing code. Explosions again use the previously credited `art/v6/fx/explosion00..08.png` and existing V9 volume textures.
 
 - **Kenney**, Blaster Kit 2.1: https://kenney.nl/assets/blaster-kit . Selected bullet and grenade GLBs; the original license is retained in `sources/Kenney-License.txt`. Rendered in Godot with replacement metallic materials; the bullet also has project-authored copper nose and brass rim geometry. `bullet.png` / `grenade.png` are 2D renders of this adapted geometry, not runtime 3D actors.
 - **Tatermand**, 2D Shooter Effects (Alpha version): https://opengameart.org/node/32258 . Selected original PSD layers exported to PNG with psd-tools; layer indexes/bounds are in `manifest.json`. No project ownership of the original artwork is claimed.

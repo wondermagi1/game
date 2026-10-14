@@ -9,6 +9,8 @@ func _ready() -> void:
 	z_index = 24
 	rng.seed = 540519
 func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float = 1) -> void:
+	# Restore the accepted gunner burst: original rings/sparks handle these hits.
+	if role==1 and kind in ["impact","explosion"]: return
 	var key = kind+str(role)
 	if cooldowns.get(key,0)>0: return
 	cooldowns[key] = .10 if kind=="shot" else (.10 if kind=="v11_sustain" else (.04 if role==1 else (.15 if kind=="explosion" else .06)))
@@ -17,6 +19,7 @@ func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float =
 	# their full particle burst for every chained hit at deep-abyss stack counts.
 	if kind=="explosion":return
 	var base_count=3 if kind=="shot" else (7 if kind.begins_with("v11_") else 12)
+	if role==1: base_count=10 if kind=="shot" else (18 if kind.begins_with("v11_") else 38)
 	var count = int(base_count*game.effects_intensity)
 	var color: Color = preload("res://scripts/presentation.gd").ROLES[clampi(role,0,2)].color
 	for i in range(mini(count,420-particles.size())):
@@ -44,5 +47,16 @@ func _draw() -> void:
 	materials.draw(self)
 	# Soft textured embers stay subordinate to solid bullets/swords/arrows.
 	for p in particles:
+		if p.role==1: continue
 		var a: float = p.life/p.max
 		preload("res://scripts/skill_textures.gd").glow(self,p.p,Vector2(p.size*3,p.size*1.6)*a,p.v.angle(),Color(p.color,.42*a))
+	# Short crisp sparks from the earlier gunner presentation, not large blobs.
+	var gun_sparks = PackedVector2Array()
+	for p in particles:
+		if p.role!=1: continue
+		var tail: Vector2 = p.v.normalized()*p.size*3*(p.life/p.max)
+		gun_sparks.append(p.p+tail*.25)
+		gun_sparks.append(p.p-tail)
+	if not gun_sparks.is_empty():
+		var color: Color = preload("res://scripts/presentation.gd").ROLES[1].color
+		draw_multiline(gun_sparks,Color(color,.65),2,true)

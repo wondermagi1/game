@@ -7,6 +7,7 @@ const PALETTE = [Color("#86ffe4"),Color("#ffb269"),Color("#cbb4ff")]
 const Detail = preload("res://scripts/skill_textures.gd")
 func _ready() -> void:
 	z_index = 25
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 func emit(kind: String, pos: Vector2, direction: Vector2, size: float, duration: float, role: int) -> void:
 	if glyphs.size()>=64: glyphs.pop_front()
 	glyphs.append({"kind":kind,"p":pos,"dir":direction,"size":size,"life":duration,"max":duration,"role":role})
@@ -20,7 +21,7 @@ static func weapon(canvas: CanvasItem, role: int, length: float, _width: float, 
 	if role in [0,2]:
 		props.draw(canvas,(3 if length>100 else 0) if role==0 else (4 if length>100 else 5),length,Color(1,1,1,color.a))
 	else:
-		Detail.bullet(canvas,length,Color(1,1,1,color.a))
+		Detail.bullet(canvas,16,Color(1,1,1,color.a))
 
 func skill_cast(role: int, slot: int, origin: Vector2, center: Vector2, direction: Vector2, rank: int) -> void:
 	# Nine small skills receive authored artwork; sizes affect visuals only.
@@ -114,7 +115,13 @@ func _draw() -> void:
 				preload("res://scripts/weapon_art_v6.gd").draw(self,2,g.size*.23,Color(1,1,1,color.a*.8))
 			"blast":
 				draw_set_transform(g.p)
-				if g.role==1: Detail.explosion(self,Vector2.ZERO,g.size,progress)
+				if g.role==1:
+					# Restore the previous pressure envelope. MaterialFX supplies the
+					# original nine-frame flame/smoke core for ultimate impacts.
+					for i in range(8):
+						var p = Vector2.from_angle(i*TAU/8)*g.size*progress*.6
+						draw_circle(p,g.size*(1-progress)*.11,Color(color,.22))
+					draw_arc(Vector2.ZERO,g.size*progress,0,TAU,48,color,6*(1-progress)+1,true)
 				elif g.role==2: Detail.sequence(self,"nature_bloom",Vector2.ZERO,Vector2.ONE*g.size*1.5,progress)
 				else: Detail.sequence(self,"sword_wave",Vector2.ZERO,Vector2.ONE*g.size*1.5,progress)
 			"reload":

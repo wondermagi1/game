@@ -15,8 +15,9 @@ func _ready() -> void:
 func burst(pos: Vector2, color: Color, count: int = 8) -> void:
 	count = mini(count,240-bits.size())
 	count = int(count*game.effects_intensity)
+	var classic_sparks: bool = is_instance_valid(game.player) and game.player.stats.role==1
 	for i in range(count):
-		bits.append({"p":pos,"v":Vector2.from_angle(visual_rng.randf()*TAU)*visual_rng.randf_range(50,180),"t":0.38,"c":color})
+		bits.append({"p":pos,"v":Vector2.from_angle(visual_rng.randf()*TAU)*visual_rng.randf_range(50,180),"t":0.38,"c":color,"classic_sparks":classic_sparks})
 
 func ring(pos: Vector2, radius: float, color: Color) -> void:
 	if rings.size()>=maxi(12,int(80*game.effects_intensity)): return
@@ -55,6 +56,9 @@ func clear() -> void:
 
 func _draw() -> void:
 	for t in trails:
+		if t.get("classic_sparks",false):
+			draw_line(t.a,t.b,Color(t.c,t.t/0.16*.4),t.width,true)
+			continue
 		var delta: Vector2 = t.b-t.a
 		preload("res://scripts/skill_textures.gd").glow(self,(t.a+t.b)*.5,Vector2(maxf(8,delta.length()*1.25),maxf(5,t.width*2.0)),delta.angle(),Color(t.c,t.t/0.16*.20))
 	for seal in seals:
@@ -68,7 +72,8 @@ func _draw() -> void:
 	for b in bits:
 		var c: Color = b.c
 		c.a = maxf(0,b.t/0.38)
-		preload("res://scripts/skill_textures.gd").glow(self,b.p,Vector2(8,6),0,Color(c,c.a*.6))
+		if b.get("classic_sparks",false): draw_circle(b.p,3,c)
+		else: preload("res://scripts/skill_textures.gd").glow(self,b.p,Vector2(8,6),0,Color(c,c.a*.6))
 	for r in rings:
 		var c: Color = r.c
 		c.a = maxf(0,r.t/0.4)
@@ -81,9 +86,9 @@ func _draw() -> void:
 		draw_string(font,t.p,t.text,HORIZONTAL_ALIGNMENT_LEFT,-1,t.size,c)
 
 
-func streak(a: Vector2, b: Vector2, color: Color, width: float) -> void:
+func streak(a: Vector2, b: Vector2, color: Color, width: float, classic_sparks: bool = false) -> void:
 	if trails.size()>=int(350*game.effects_intensity): return
-	trails.append({"a":a,"b":b,"c":color,"width":width,"t":0.16})
+	trails.append({"a":a,"b":b,"c":color,"width":width,"t":0.16,"classic_sparks":classic_sparks})
 
 func sigils(pos: Vector2, radius: float, color: Color, rank: int) -> void:
 	if seals.size()>=maxi(6,int(30*game.effects_intensity)): return
@@ -102,7 +107,7 @@ func combo_burst(pos: Vector2, role: int, title: String) -> void:
 	burst(pos,color,36)
 	for i in range(12):
 		var dir = Vector2.from_angle(i*TAU/12)
-		streak(pos+dir*25,pos+dir*170,color,8 if role==1 else 3)
+		streak(pos+dir*25,pos+dir*170,color,8 if role==1 else 3,role==1)
 	if not title.is_empty(): caption(pos-Vector2(0,75),title,color)
 
 func mastery_burst(pos: Vector2, role: int, level: int) -> void:

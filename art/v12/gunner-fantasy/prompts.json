@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-10-14",
+  "method": "Built-in image_gen tool, transparent_background=true; original images copied unchanged.",
+  "intent": "Replace rejected modern cartridges/grenades with eastern/western fantasy black-powder alchemy ammunition.",
+  "assets": [
+    {
+      "file": "runic-shot.png",
+      "source": "exec-08bbfdcb-7668-4c79-84f3-1ec884e74804.png",
+      "prompt": "Use case: stylized-concept. Asset type: one isolated transparent 2D projectile sprite for a painterly top-down fantasy action game mixing eastern cultivation fantasy and western alchemy. Primary request: a single compact ROUND musket ball, spherical dark forged iron, hand-engraved fine aged gold runic grooves, one restrained warm ember inset, subtle worn surface and metal highlights. Not a cartridge or a pointed bullet: ONLY a spherical iron shot, no casing, no flat base, no fins. Design reads beautifully when shrunk to 16 pixels; strong simple silhouette, distinct dark lower right and softly lit upper left. Three-quarter overhead camera, orthographic perspective, physically shaded hand-painted game art, antiqued bronze accents, muted iron grey and amber, NOT photoreal modern military equipment and NOT pixel art. Composition: exactly one sphere centered, occupies about 65 percent image width, small free margin, transparent alpha background. No scene, hands, gun, stand, ground, cast shadow, outer glow, trail, particles, text, labels, frame, grid or watermark. Genuine transparent background; keep the entire sphere opaque except background."
+    },
+    {
+      "file": "powder-orb.png",
+      "source": "exec-d9c25158-bd0a-4972-aeac-b60a7ed52570.png",
+      "prompt": "Use case: stylized-concept. Asset type: one isolated transparent 2D explosive projectile sprite for a painterly top-down fantasy game mixing eastern cultivation and western alchemy. Primary request: an antique alchemist's gun-fired powder bomb, compact round blackened iron/ceramic orb with TWO narrow aged bronze engraved reinforcement bands hugging the sphere, small amber rune inlay and a short braided cord fuse emerging from a brass neck at upper-left, fuse tip tiny glowing ember. Clear spherical silhouette with a short fuse, no handle or carrying hardware. It belongs with a wood-and-bronze flintlock in a magical medieval adventure. Refined painterly fantasy item art with volumetric soft highlights, slight worn material detail, warm gold/bronze, dark grey iron, restrained ember red. Simple readable shape at 30 pixels, no elaborate tiny clutter. Orthographic three-quarter overhead view with upper-left lighting. Exactly ONE item centered occupying 65 percent image, all fuse visible with margins. Genuine transparent alpha background. No modern grenade spoon, pin, ring, tactical grooves, cartridge casing, bullet nose, rockets, fins, futuristic tech, neon glow, explosion, giant fire, trail, background, ground plane, cast shadow, text, labels, frame, grid or watermark."
+    }
+  ]
+}

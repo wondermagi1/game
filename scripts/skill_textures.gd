@@ -30,22 +30,19 @@ static func sequence(canvas: CanvasItem, name: String, pos: Vector2, size: Vecto
 static func used(path: String) -> Rect2:
 	if not bounds.has(path): bounds[path] = Rect2(texture(path).get_image().get_used_rect())
 	return bounds[path]
-static func bullet(canvas: CanvasItem, length: float, color: Color = Color.WHITE) -> void:
-	var path = ROOT+"bullet.png"
+static func bullet(canvas: CanvasItem, diameter: float, color: Color = Color.WHITE) -> void:
+	var path = ROOT+"gunner-fantasy/runic-shot.png"
 	var r = used(path)
-	# Brass jacket, copper rounded nose, machined base rings. Image points upward.
-	image_at(canvas,path,Vector2.ZERO,Vector2(length*r.size.x/r.size.y*.72,length),PI*.5,color,r)
+	# A small engraved musket ball, never a modern cartridge or an enlarged shell.
+	var size = clampf(diameter,12.0,18.0)
+	glow(canvas,Vector2(-size*.62,0),Vector2(size*2.0,size*.48),0,Color(1,.62,.24,color.a*.24))
+	image_at(canvas,path,Vector2.ZERO,Vector2(size*r.size.x/r.size.y,size),0,color,r)
 static func grenade(canvas: CanvasItem, size: float, angle: float = 0.0) -> void:
-	var path = ROOT+"grenade.png"
+	var path = ROOT+"gunner-fantasy/powder-orb.png"
 	var r = used(path)
 	image_at(canvas,path,Vector2.ZERO,Vector2(size*r.size.x/r.size.y,size),angle,Color.WHITE,r)
 static func muzzle(canvas: CanvasItem, length: float, phase: float) -> void:
 	image_at(canvas,ROOT+"muzzle-flame.png",Vector2(length*.38,0),Vector2(length*.64,length),PI*.5,Color(1,1,1,(1-phase)*.88))
-static func explosion(canvas: CanvasItem, pos: Vector2, size: float, phase: float, alpha: float = 1.0) -> void:
-	# 34 authored frames, 8 columns, 300 px cells. Remaining cells are empty.
-	var frame = mini(33,int(clampf(phase,0,.999)*34))
-	var source = Rect2(Vector2(frame%8,floori(frame/8.0))*300,Vector2.ONE*300)
-	image_at(canvas,ROOT+"explosion.png",pos,Vector2.ONE*size*1.8,0,Color(1,1,1,alpha),source)
 static func glow(canvas: CanvasItem, pos: Vector2, size: Vector2, angle: float, color: Color) -> void:
 	image_at(canvas,"res://art/v6/fx/light_01.png",pos,size,angle,color)
 static func rune(canvas: CanvasItem, pos: Vector2, size: Vector2, angle: float, alpha: float) -> void:
