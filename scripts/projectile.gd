@@ -27,9 +27,37 @@ func display_offset() -> Vector2:
 	return launch_offset.lerp(height_offset,clampf(lifetime/.09,0,1))
 var exclude: Array[RID] = []
 var tint = Color.WHITE
+var round_glow: Sprite2D
+var round_glow_material: ShaderMaterial
 
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	# 只给实体符文圆弹添加独立光层；金属弹体仍使用原来的普通混合。
+	set_process(style==1 and not enemy_shot and not bubble and explosion<=0)
+	if is_processing():
+		round_glow = Sprite2D.new()
+		round_glow.name = "RunicRoundGlow"
+		round_glow.texture = preload("res://art/v6/fx/light_01.png")
+		round_glow.scale = Vector2(4.4,2.8)*round_diameter()/round_glow.texture.get_size()
+		round_glow_material = ShaderMaterial.new()
+		round_glow_material.shader = preload("res://art/v12/gunner-fantasy/round_glow.gdshader")
+		round_glow.material = round_glow_material
+		add_child(round_glow)
+		sync_round_glow()
+
+func round_diameter() -> float:
+	if body_length>0: return 18.0 if source=="rapid" else 16.0
+	return 16.0 if empowered else 14.0
+
+func _process(_delta: float) -> void:
+	if gone or game.state!="combat": return
+	sync_round_glow()
+
+func sync_round_glow() -> void:
+	# 跟随出手高度与反弹朝向；用弹体寿命而非 TIME，暂停时光效也静止。
+	round_glow.position = display_offset().rotated(-rotation)+Vector2(-.8*round_diameter(),0)
+	var strength: float = 1.28 if source=="rapid" else (1.12 if empowered else 1.0)
+	round_glow_material.set_shader_parameter("glow_params",Vector4(lifetime,game.effects_intensity,0.0 if game.reduced_motion else 1.0,strength))
 
 func _physics_process(delta: float) -> void:
 	if game.state != "combat" or gone: return
@@ -139,7 +167,7 @@ func _draw() -> void:
 	if body_length>0:
 		if style==1:
 			# Projectile reach belongs to collision; it must not stretch the sprite.
-			preload("res://scripts/skill_textures.gd").bullet(self,18 if source=="rapid" else 16)
+			preload("res://scripts/skill_textures.gd").bullet(self,round_diameter())
 		else:
 			preload("res://scripts/skill_art.gd").weapon(self,style,body_length,hit_width*0.6,tint)
 		return
@@ -151,7 +179,7 @@ func _draw() -> void:
 	elif style == 0:
 		preload("res://scripts/skill_art.gd").weapon(self,0,58,3,Color.WHITE)
 	elif style == 1:
-		preload("res://scripts/skill_textures.gd").bullet(self,16 if empowered else 14)
+		preload("res://scripts/skill_textures.gd").bullet(self,round_diameter())
 	else:
 		preload("res://scripts/skill_art.gd").weapon(self,2,54,2,Color.WHITE)
 
