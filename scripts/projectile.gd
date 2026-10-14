@@ -140,16 +140,11 @@ func _draw() -> void:
 		draw_circle(Vector2.ZERO,9,Color("#ff657c"))
 		draw_circle(Vector2(-2,-2),4,Color("#ffe2be"))
 	elif explosion > 0:
-		draw_circle(Vector2.ZERO,13,Color("#efb866"))
-		draw_arc(Vector2.ZERO,19,0,TAU,16,Color("#f8e1ac"),2)
+		preload("res://scripts/skill_textures.gd").grenade(self,42,lifetime*3)
 	elif style == 0:
 		preload("res://scripts/skill_art.gd").weapon(self,0,58,3,Color.WHITE)
 	elif style == 1:
-		if empowered:
-			draw_line(Vector2(-34,0),Vector2(14,0),Color(1,0.75,0.3,0.45),13,true)
-			draw_arc(Vector2(8,0),9,0,TAU,12,Color("#fff2c0"),2,true)
-		draw_line(Vector2(-23,0),Vector2(8,0),tint,5,true)
-		draw_circle(Vector2(8,0),4,Color("#fff5d5"))
+		preload("res://scripts/skill_textures.gd").bullet(self,46 if empowered else 34)
 	else:
 		preload("res://scripts/skill_art.gd").weapon(self,2,54,2,Color.WHITE)
 

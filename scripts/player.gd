@@ -373,7 +373,9 @@ func _draw() -> void:
 		for i in range(sword_count):
 			var angle = orbit_time*4+i*TAU/sword_count
 			var p = Vector2.from_angle(angle)*r
-			draw_line(p-Vector2.from_angle(angle+PI/2)*17,p+Vector2.from_angle(angle+PI/2)*17,Color("#c5fff0"),6,true)
+			draw_set_transform(p+Vector2(0,-18),angle+PI/2)
+			preload("res://scripts/skill_art.gd").weapon(self,0,70,4,Color.WHITE)
+		draw_set_transform(Vector2.ZERO)
 
 func use_item(slot: int) -> bool:
 	if game.state!="combat" or dead or slot<0 or slot>2: return false

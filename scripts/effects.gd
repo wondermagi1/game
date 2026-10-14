@@ -55,7 +55,8 @@ func clear() -> void:
 
 func _draw() -> void:
 	for t in trails:
-		draw_line(t.a,t.b,Color(t.c,t.t/0.16*0.4),t.width,true)
+		var delta: Vector2 = t.b-t.a
+		preload("res://scripts/skill_textures.gd").glow(self,(t.a+t.b)*.5,Vector2(maxf(8,delta.length()*1.25),maxf(5,t.width*2.0)),delta.angle(),Color(t.c,t.t/0.16*.20))
 	for seal in seals:
 		var alpha = clampf(seal.t/0.7,0,1)*0.7
 		for level in range(seal.rank):
@@ -67,7 +68,7 @@ func _draw() -> void:
 	for b in bits:
 		var c: Color = b.c
 		c.a = maxf(0,b.t/0.38)
-		draw_circle(b.p,3,c)
+		preload("res://scripts/skill_textures.gd").glow(self,b.p,Vector2(8,6),0,Color(c,c.a*.6))
 	for r in rings:
 		var c: Color = r.c
 		c.a = maxf(0,r.t/0.4)

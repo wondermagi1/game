@@ -4,6 +4,7 @@ var game
 var glyphs: Array = []
 const WEAPONS = preload("res://art/v5/weapons.png")
 const PALETTE = [Color("#86ffe4"),Color("#ffb269"),Color("#cbb4ff")]
+const Detail = preload("res://scripts/skill_textures.gd")
 func _ready() -> void:
 	z_index = 25
 func emit(kind: String, pos: Vector2, direction: Vector2, size: float, duration: float, role: int) -> void:
@@ -14,15 +15,35 @@ func _process(delta: float) -> void:
 	for g in glyphs: g.life -= delta
 	glyphs = glyphs.filter(func(g): return g.life>0)
 	queue_redraw()
-static func weapon(canvas: CanvasItem, role: int, length: float, width: float, color: Color) -> void:
+static func weapon(canvas: CanvasItem, role: int, length: float, _width: float, color: Color) -> void:
 	var props=preload("res://scripts/weapon_art_v6.gd")
 	if role in [0,2]:
 		props.draw(canvas,(3 if length>100 else 0) if role==0 else (4 if length>100 else 5),length,Color(1,1,1,color.a))
 	else:
-		# V5 gunner tracer silhouette, retaining the corrected V6 release position.
-		var half=length*.5
-		canvas.draw_colored_polygon(PackedVector2Array([Vector2(-half,-width),Vector2(half*.5,-width),Vector2(half,0),Vector2(half*.5,width),Vector2(-half,width)]),color)
-		canvas.draw_line(Vector2(-half*.6,0),Vector2(half*.6,0),Color("#fff5c7"),width,true)
+		Detail.bullet(canvas,length,Color(1,1,1,color.a))
+
+func skill_cast(role: int, slot: int, origin: Vector2, center: Vector2, direction: Vector2, rank: int) -> void:
+	# Nine small skills receive authored artwork; sizes affect visuals only.
+	var power = 1.0+minf(rank,10)*.025
+	match role:
+		0:
+			if slot==0: emit("sword_halo",origin,direction,165*power,.65,0)
+			elif slot==1: emit("slash",origin+direction*95+Vector2(0,-48),direction,210*power,.35,0)
+			else: emit("dash_blades",origin,direction,200*power,.42,0)
+		1:
+			if slot==2: emit("reload",origin+Vector2(0,-48),direction,90*power,.70,1)
+			else: emit("muzzle",origin+game.player.visual.muzzle_local(),direction,(100 if slot==0 else 135)*power,.22,1)
+		2:
+			if slot==0: emit("bow",origin+Vector2(0,-48),direction,170*power,.4,2)
+			elif slot==1: emit("hunt",center,direction,240*power,.7,2)
+			else: emit("hunt",center,direction,340*power,1.0,2)
+
+func zone_anticipation(pos: Vector2, radius: float, kind: String, duration: float) -> void:
+	if kind in ["arrows","v7_storm","storm"]: emit("rain",pos,Vector2.DOWN,radius,maxf(.15,duration),2)
+	elif kind in ["swords","v7_array"]: emit("rain",pos,Vector2.DOWN,radius,maxf(.15,duration),0)
+	elif kind=="blade": emit("slash",pos,game.player.aim,radius*1.8,maxf(.15,duration),0)
+	elif kind in ["v7_trap","echo"]: emit("hunt",pos,Vector2.UP,radius*1.5,maxf(.3,duration),2)
+	elif kind=="v7_fire": emit("blast",pos,Vector2.UP,radius,.52,1)
 func _draw() -> void:
 	for g in glyphs:
 		var progress: float = 1-g.life/g.max
@@ -40,11 +61,12 @@ func _draw() -> void:
 					weapon(self,0,58+g.size*.08,3.5,Color(color,.78))
 			"gun_heat":
 				draw_set_transform(g.p,g.dir.angle())
-				for i in range(4):
-					var x=-g.size*.3+i*g.size*.2
-					var flame=20+sin(progress*TAU+i)*8
-					draw_colored_polygon(PackedVector2Array([Vector2(x,-10),Vector2(x+flame,-28-i*3),Vector2(x+12,0),Vector2(x+flame,28+i*3),Vector2(x,10)]),Color(color,.16+i*.05))
-				draw_arc(Vector2.ZERO,g.size*(.4+progress*.35),-.9,.9,30,Color(color,.72),5,true)
+				Detail.rune(self,Vector2(0,-35),Vector2.ONE*g.size*.85,progress*.5,(1-progress)*.55)
+				Detail.sequence(self,"arcane",Vector2(18,-42),Vector2(72,100),progress,0,Color(1,1,1,(1-progress)*.42))
+				for i in range(3):
+					var angle = -1.0+i
+					draw_set_transform(g.p+Vector2.from_angle(angle)*g.size*.38+Vector2(0,-45),g.dir.angle())
+					weapon(self,1,38,8,color)
 			"bow_constellation":
 				draw_set_transform(g.p,g.dir.angle())
 				draw_arc(Vector2.ZERO,g.size*.72,-1.25,1.25,40,Color(color,.75),5,true)
@@ -62,7 +84,7 @@ func _draw() -> void:
 			"fall", "finish":
 				var p: Vector2 = g.p-Vector2(0,pow(1-progress,3)*g.size*1.4)
 				draw_set_transform(p,PI*0.5)
-				draw_colored_polygon(PackedVector2Array([Vector2(-g.size*1.6,-8),Vector2(g.size*0.4,-g.size*0.07),Vector2(g.size*0.4,g.size*0.07)]),Color(color,0.15))
+				Detail.glow(self,Vector2(-g.size*.6,0),Vector2(g.size*1.8,g.size*.16),0,Color(color,.20))
 				weapon(self,g.role,g.size,g.size*0.055,color)
 				if progress>0.6:
 					draw_set_transform(g.p)
@@ -76,24 +98,46 @@ func _draw() -> void:
 					weapon(self,g.role,90,6,color)
 			"slash":
 				draw_set_transform(g.p,g.dir.angle())
-				var points = PackedVector2Array()
-				for i in range(20): points.append(Vector2.from_angle(-1.2+i*2.4/19)*g.size*(0.6+progress*0.4))
-				for i in range(19,-1,-1): points.append(Vector2.from_angle(-1.2+i*2.4/19)*g.size*(0.5+progress*0.4))
-				draw_colored_polygon(points,color)
+				Detail.sequence(self,"sword_slash",Vector2.ZERO,Vector2.ONE*g.size*1.35,progress,0,Color(1,1,1,color.a))
 			"muzzle":
 				draw_set_transform(g.p,g.dir.angle())
-				draw_colored_polygon(PackedVector2Array([Vector2.ZERO,Vector2(g.size*0.4,-28),Vector2(g.size,0),Vector2(g.size*0.4,28)]),color)
+				Detail.muzzle(self,g.size,progress)
 			"bow":
 				draw_set_transform(g.p,g.dir.angle())
-				draw_arc(Vector2.ZERO,g.size,-1.2,1.2,24,color,5,true)
-				draw_line(Vector2.from_angle(-1.2)*g.size,Vector2(-15,0),color,2,true)
-				draw_line(Vector2.from_angle(1.2)*g.size,Vector2(-15,0),color,2,true)
+				Detail.sequence(self,"nature_bloom",Vector2.ZERO,Vector2(g.size*1.4,g.size*.85),progress,0,Color(1,1,1,color.a))
+				preload("res://scripts/weapon_art_v6.gd").draw(self,2,g.size*.23,Color(1,1,1,color.a*.8))
 			"blast":
 				draw_set_transform(g.p)
-				for i in range(8):
-					var p = Vector2.from_angle(i*TAU/8)*g.size*progress*0.6
-					# The V9 fire-and-smoke core carries the explosion volume. Keep these
-					# lobes as a translucent pressure envelope instead of an opaque orange blob.
-					draw_circle(p,g.size*(1-progress)*0.11,Color(color,0.22))
-				draw_arc(Vector2.ZERO,g.size*progress,0,TAU,48,color,6*(1-progress)+1,true)
+				if g.role==1: Detail.explosion(self,Vector2.ZERO,g.size,progress)
+				else: Detail.sequence(self,"nature_bloom",Vector2.ZERO,Vector2.ONE*g.size*1.5,progress)
+			"reload":
+				draw_set_transform(g.p)
+				Detail.rune(self,Vector2.ZERO,Vector2(g.size*1.8,g.size*1.0),-progress*.7,(1-progress)*.6)
+				Detail.sequence(self,"alchemy_slash",Vector2.ZERO,Vector2.ONE*g.size*1.45,progress,0,Color(1,1,1,.6))
+				for i in range(3):
+					var angle = progress*1.8+i*TAU/3
+					draw_set_transform(g.p+Vector2.from_angle(angle)*g.size*(1-progress),g.dir.angle())
+					weapon(self,1,36,8,Color(1,1,1,color.a))
+			"hunt":
+				draw_set_transform(g.p)
+				Detail.sequence(self,"nature_bloom",Vector2.ZERO,Vector2(g.size*1.6,g.size*.85),progress,0,Color(1,1,1,.8))
+				Detail.rune(self,Vector2.ZERO,Vector2(g.size,g.size*.6),-progress*.4,(1-progress)*.38)
+				for i in range(4):
+					var off = Vector2.from_angle(i*TAU/4)*g.size*.42
+					Detail.sequence(self,"nature_wreath",off,Vector2(65,125),progress,0,Color(1,1,1,.65))
+			"dash_blades":
+				for i in range(3):
+					draw_set_transform(g.p+g.dir*(45+i*65)+Vector2(0,-32),g.dir.angle())
+					Detail.sequence(self,"sword_wave",Vector2.ZERO,Vector2(g.size*.7,g.size*.65),progress,0,Color(1,1,1,(1-progress)*.8))
+					weapon(self,0,70+i*15,4,Color(1,1,1,(1-progress)*.6))
+			"rain":
+				for i in range(3 if game.effects_intensity<.5 else 7):
+					var landing: Vector2 = g.p+Vector2.from_angle(i*2.4)*g.size*(.2+float(i%3)*.22)
+					var phase = clampf(progress*1.35-float(i%3)*.10,0,1)
+					var pos: Vector2 = landing-Vector2(30,170)*(1-phase)
+					draw_set_transform(pos,Vector2(30,170).angle())
+					weapon(self,g.role,84,5,Color(1,1,1,1.0 if phase<.9 else (1-phase)*10))
+					if phase>.7:
+						draw_set_transform(landing)
+						Detail.sequence(self,"nature_leaves" if g.role==2 else "sword_slash",Vector2.ZERO,Vector2(66,48),(phase-.7)/.3)
 	draw_set_transform(Vector2.ZERO)

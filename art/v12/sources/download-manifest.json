@@ -1,0 +1,37 @@
+[
+  {
+    "file": "shooter.psd",
+    "url": "https://opengameart.org/sites/default/files/Effects_v05_Publish_0.psd",
+    "sha256": "3359e0aca165366911e163eb739bddf1fdcf1a237f2fca5dcc4c5a5c714231b2"
+  },
+  {
+    "file": "shooter-preview.png",
+    "url": "https://opengameart.org/sites/default/files/Effects_0.png",
+    "sha256": "637442df8711460a25c62060e995b73de3149737e0f2db373b41975378cf1b77"
+  },
+  {
+    "file": "explosion.png",
+    "url": "https://opengameart.org/sites/default/files/explosion0003-sheet_300x300.png",
+    "sha256": "ac14ba20880877f37ad119294052c913d14cfd3eeec8dcd654a43ec7f6adbde4"
+  },
+  {
+    "file": "slash.zip",
+    "url": "https://opengameart.org/sites/default/files/Everything_0.zip",
+    "sha256": "163eb4e4d41385f3b888e7176c6da077d0e7fa7c101da96bbaa4645a2ec9d673"
+  },
+  {
+    "file": "nature.zip",
+    "url": "https://opengameart.org/sites/default/files/Nature%20Magic%20Effect.zip",
+    "sha256": "46f44a30d38b65d55ed1101ce8dc8907e31043958abaf9e2b1894508438815f8"
+  },
+  {
+    "file": "arcane.zip",
+    "url": "https://opengameart.org/sites/default/files/Arcane_Effect.zip",
+    "sha256": "e404dd03289e41c87e64a67a781d4c5dc2b91cb1a45eb54883314231f1fd7b8d"
+  },
+  {
+    "file": "blaster.zip",
+    "url": "https://kenney.nl/media/pages/assets/blaster-kit/261d80a716-1753959510/kenney_blaster-kit_2.1.zip",
+    "sha256": "91e3093e95427d59625e7e2ce2d0399b861600160fd0b4ada7714796b67cea8c"
+  }
+]

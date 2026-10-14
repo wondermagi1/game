@@ -785,6 +785,7 @@ func process_loot(delta: float) -> void:
 func add_zone(pos: Vector2, radius: float, delay: float, interval: float, amount: float, kind: String, hits: int) -> void:
 	if zones.size()>=40: return
 	zones.append({"p":pos,"r":radius,"t":delay,"interval":interval,"damage":amount,"kind":kind,"hits":hits})
+	art.zone_anticipation(pos,radius,kind,delay)
 
 func process_zones(delta: float) -> void:
 	for zone in zones.duplicate():
@@ -795,6 +796,7 @@ func process_zones(delta: float) -> void:
 				fx.sigils(zone.p,zone.r,player.stats.base.color,2)
 			zone.hits -= 1
 			zone.t = zone.interval
+			if zone.hits>0: art.zone_anticipation(zone.p,zone.r,zone.kind,zone.interval)
 			if zone.hits<=0: zones.erase(zone)
 
 func in_zone(pos: Vector2, kind: String) -> bool:

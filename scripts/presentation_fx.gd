@@ -9,9 +9,6 @@ func _ready() -> void:
 	z_index = 24
 	rng.seed = 540519
 func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float = 1) -> void:
-	# These extra impact/explosion bursts did not exist in the V5 gunner.
-	# game.explode still draws the original ring and sparks.
-	if role==1 and kind in ["impact","explosion"]:return
 	var key = kind+str(role)
 	if cooldowns.get(key,0)>0: return
 	cooldowns[key] = .10 if kind=="shot" else (.10 if kind=="v11_sustain" else (.04 if role==1 else (.15 if kind=="explosion" else .06)))
@@ -19,7 +16,7 @@ func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float =
 	# Existing explosion rings/sparks already cover secondary debris. Avoid duplicating
 	# their full particle burst for every chained hit at deep-abyss stack counts.
 	if kind=="explosion":return
-	var base_count=10 if kind=="shot" else (18 if kind.begins_with("v11_") else 38)
+	var base_count=3 if kind=="shot" else (7 if kind.begins_with("v11_") else 12)
 	var count = int(base_count*game.effects_intensity)
 	var color: Color = preload("res://scripts/presentation.gd").ROLES[clampi(role,0,2)].color
 	for i in range(mini(count,420-particles.size())):
@@ -45,15 +42,7 @@ func clear() -> void:
 	queue_redraw()
 func _draw() -> void:
 	materials.draw(self)
-	# Batch cosmetic streaks by role instead of one polygon draw per particle.
-	for role in range(3):
-		var points = PackedVector2Array()
-		for p in particles:
-			if p.role!=role: continue
-			var a: float = p.life/p.max
-			var tail: Vector2 = p.v.normalized()*p.size*3*a
-			points.append(p.p+tail*.25)
-			points.append(p.p-tail)
-		if not points.is_empty():
-			var c: Color = preload("res://scripts/presentation.gd").ROLES[role].color
-			draw_multiline(points,Color(c,.65),2,true)
+	# Soft textured embers stay subordinate to solid bullets/swords/arrows.
+	for p in particles:
+		var a: float = p.life/p.max
+		preload("res://scripts/skill_textures.gd").glow(self,p.p,Vector2(p.size*3,p.size*1.6)*a,p.v.angle(),Color(p.color,.42*a))

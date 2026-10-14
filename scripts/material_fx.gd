@@ -6,6 +6,7 @@ const SMOKE=[preload("res://art/v6/fx/smoke_01.png"),preload("res://art/v6/fx/sm
 const FLAMES=[preload("res://art/v6/fx/flame_01.png"),preload("res://art/v6/fx/flame_02.png"),preload("res://art/v6/fx/flame_03.png")]
 const LIGHT=preload("res://art/v6/fx/light_01.png")
 const MAGIC=preload("res://art/v6/fx/magic_01.png")
+const Detail=preload("res://scripts/skill_textures.gd")
 const VOLUMES=[preload("res://art/v9/fx/sword-volume.png"),preload("res://art/v9/fx/gunner-volume.png"),preload("res://art/v9/fx/ranger-volume.png")]
 const EXPLOSIONS=[preload("res://art/v6/fx/explosion00.png"),preload("res://art/v6/fx/explosion01.png"),preload("res://art/v6/fx/explosion02.png"),preload("res://art/v6/fx/explosion03.png"),preload("res://art/v6/fx/explosion04.png"),preload("res://art/v6/fx/explosion05.png"),preload("res://art/v6/fx/explosion06.png"),preload("res://art/v6/fx/explosion07.png"),preload("res://art/v6/fx/explosion08.png")]
 func _init() -> void: rng.seed=61927
@@ -13,10 +14,7 @@ func add(type: String, pos: Vector2, velocity: Vector2, size: Vector2, duration:
 	if bits.size()>=cap: bits.pop_front()
 	bits.append({"type":type,"p":pos,"v":velocity,"size":size,"life":duration,"max":duration,"c":color,"a":angle,"variant":clampi(variant_override,0,2) if variant_override>=0 else rng.randi_range(0,2)})
 func emit(kind: String, pos: Vector2, dir: Vector2, role: int, strength: float, quality: float) -> void:
-	# Gunner uses V5 flashes/rings again, also in the action inspector.
-	# V8 ultimate layers are additive visuals and intentionally keep the accepted
-	# V5 gun/bow audio and ordinary attack presentation unchanged.
-	if role==1 and not (kind.begins_with("v8_") or kind.begins_with("v11_")):return
+	# All three roles now use textured emission. Audio and combat are separate.
 	var cap=24 if quality<.5 else (48 if quality<.8 else 80)
 	var color=[Color("#99f7ef"),Color("#ffb269"),Color("#a5e9bc")][clampi(role,0,2)]
 	if kind=="v11_anticipation":
@@ -117,5 +115,12 @@ func draw(canvas: CanvasItem) -> void:
 			"spark":tex=LIGHT;size.x*=.55+phase*.3;size.y*=1.0-phase*.65;col.a*=1.0-phase
 			_:col.a*=1-phase
 		canvas.draw_set_transform(p.p,p.a)
-		canvas.draw_texture_rect(tex,Rect2(-size*.5,size),false,col)
+		if p.type=="explosion":
+			Detail.explosion(canvas,Vector2.ZERO,p.size.x,phase,p.c.a)
+		elif p.type=="volume" and p.variant==1:
+			# Keep the approved sword/bow volume cores; firearm volume uses source
+			# flame and smoke, without a second opaque orange disc.
+			Detail.image_at(canvas,Detail.ROOT+"muzzle-flame.png",Vector2.ZERO,size*.72,0,Color(1,1,1,col.a*.7))
+		else:
+			canvas.draw_texture_rect(tex,Rect2(-size*.5,size),false,col)
 	canvas.draw_set_transform(Vector2.ZERO)

@@ -201,6 +201,7 @@ func use(slot: int) -> bool:
 		game.profile.discover("skill_%d_%d" % [role,slot])
 		return true
 	ultimate.link(slot)
+	game.art.skill_cast(role,slot,actor.global_position,center,actor.aim,level)
 	match role:
 		0:
 			match slot:
