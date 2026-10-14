@@ -12,7 +12,6 @@ func _ready() -> void:
 	var collision = get_child(0)
 	if collision is CollisionShape2D: collision.shape.radius = radius
 func execute_attack() -> void:
-	game.fx.boss_cast(global_position,kind,locked_dir)
 	state = "recover"
 	timer = .8
 	cooldown = 2.4 if second_phase else 3.0
@@ -34,9 +33,9 @@ func execute_attack() -> void:
 			game.sound.play("lulu_splash")
 			game.presentation_fx.emit("water",global_position+Vector2(0,-15),Vector2.UP,2,2)
 			game.fx.caption(global_position-Vector2(65,120),"噜噜 · 拍拍水",Color("#a3e3e7"))
-			hazard(game.player.global_position,105,1.5,damage*1.2)
+			game.add_hazard(game.player.global_position,105,1.5,damage*1.2)
 			if second_phase:
-				for side in [-1,1]: hazard(game.safe_position(game.player.global_position+Vector2(side*240,0)),80,1.8,damage)
+				for side in [-1,1]: game.add_hazard(game.safe_position(game.player.global_position+Vector2(side*240,0)),80,1.8,damage)
 			game.presentation_fx.emit("cast",global_position,locked_dir,2,2)
 		2:
 			visual.lulu_play("bath",2.5)
@@ -45,7 +44,7 @@ func execute_attack() -> void:
 			timer = 2.5
 			cooldown = 4.1
 			bath_clock = 2.5
-			game.fx.surge("water",global_position,115,Color("#acdedd"),Vector2.UP,1.0)
+			game.fx.ring(global_position,115,Color("#acdedd"))
 	pattern += 1
 func _physics_process(delta: float) -> void:
 	var previous_state=state
@@ -64,4 +63,4 @@ func _draw() -> void:
 	if bath_clock>0:
 		for i in range(6):
 			var p = Vector2(sin(bath_clock+i)*65,-65-fposmod(bath_clock*28+i*18,80))
-			WorldArt.sprite(self,WorldArt.SHIELD,p,Vector2.ONE*(12+i%3*3),0,Color(.7,.95,.95,.6))
+			draw_arc(p,5+i%3,0,TAU,16,Color(.7,.95,.95,.45),1.5,true)

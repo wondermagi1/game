@@ -299,13 +299,11 @@ func hurt(raw: float) -> void:
 		shield_ready = false
 		if stats.abyss and stats.raw_bonus("shield")>=5: game.explode(global_position,150,stats.value("attack")*0.6,false)
 		invulnerable = 0.25
-		game.fx.surge("shield_break",global_position,48,Color("#a0e8ff"))
+		game.fx.ring(global_position,70,Color("#a0e8ff"))
 		return
 	var amount = maxf(1,raw*100.0/(100.0+stats.value("armor")))
 	var absorbed = minf(barrier,amount)
 	barrier -= absorbed
-	if absorbed>0:
-		game.fx.surge("shield_break" if barrier<=0 else "shield_hit",global_position,48,Color("#a0e8ff"),Vector2.UP,.4)
 	amount -= absorbed
 	hp -= amount
 	game.taken += amount
@@ -366,6 +364,7 @@ func stage_reset() -> void:
 		heal(stats.value("hp")*game.stage_recovery_ratio+stats.bonus("stage_heal"))
 
 func _draw() -> void:
+	if shield_ready: draw_arc(Vector2(0,-6),39,0,TAU,48,Color("#a0e8ff"),2,true)
 	if dash_buff > 0 and stats.role == 0: draw_arc(Vector2.ZERO,32,0,TAU,32,Color("#69dbce"),1.5,true)
 	if orbit_time > 0:
 		var r = 150.0+stats.bonus("orbit")*25.0+(skills.rank(0)-1)*20
@@ -399,7 +398,7 @@ func use_item(slot: int) -> bool:
 		"magnet": magnet_time = 12; game.collect_loot(true)
 		"sand":
 			for i in range(4): skills.cooldowns[i] *= 0.5
-	game.fx.item_use(id,global_position)
+	game.fx.sigils(global_position,100,Color("#b4e2d1"),2)
 	game.profile.discover("item_"+id)
 	game.profile.save_profile()
 	return true

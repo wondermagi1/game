@@ -431,16 +431,13 @@ func nearest_enemy(pos: Vector2, excluded: Array, radius: float):
 func explode(pos: Vector2, radius: float, amount: float, apply_status: bool = true, source: String = "explosion") -> void:
 	if is_instance_valid(player): presentation_fx.emit("explosion",pos,Vector2.UP,player.stats.role,clampf(radius/65,1,4))
 	if is_instance_valid(rooms.scene): rooms.scene.damage_cover(pos,radius,amount)
-	fx.ring(pos,radius,Color("#fac883"),is_instance_valid(player) and player.stats.role==1)
+	fx.ring(pos,radius,Color("#fac883"))
 	fx.burst(pos,Color("#fac883"),20)
 	for enemy in enemies.duplicate():
 		if is_instance_valid(enemy) and enemy.global_position.distance_to(pos) < radius:
 			enemy.hurt(amount,false,apply_status,source)
 
 func clear_attacks() -> void:
-	if is_instance_valid(fx):
-		fx.surges.clear()
-		fx.queue_redraw()
 	if is_instance_valid(presentation_fx): presentation_fx.clear()
 	if is_instance_valid(screen_fx):screen_fx.clear()
 	if is_instance_valid(ground_residue):ground_residue.clear()
@@ -453,9 +450,6 @@ func clear_attacks() -> void:
 	hazards.clear()
 
 func clear_enemy_attacks() -> void:
-	if is_instance_valid(fx):
-		fx.surges = fx.surges.filter(func(event): return event.kind not in ["impact","boss_cast","boss_phase","charge_wake","water"])
-		fx.queue_redraw()
 	for shot in projectiles.duplicate():
 		if is_instance_valid(shot) and shot.enemy_shot:
 			shot.gone = true
@@ -463,16 +457,15 @@ func clear_enemy_attacks() -> void:
 			shot.queue_free()
 	hazards.clear()
 
-func add_hazard(pos: Vector2, radius: float, delay: float, amount: float, element: String = "ember") -> void:
-	hazards.append({"p":safe_position(pos),"radius":radius,"t":delay,"max":delay,"damage":amount,"element":element})
+func add_hazard(pos: Vector2, radius: float, delay: float, amount: float) -> void:
+	hazards.append({"p":safe_position(pos),"radius":radius,"t":delay,"max":delay,"damage":amount})
 
 func process_hazards(delta: float) -> void:
 	for h in hazards.duplicate():
 		h.t -= delta
 		if h.t <= 0:
 			hazards.erase(h)
-			var element: String = h.get("element","ember")
-			fx.surge("water" if element=="water" else "impact",h.p,h.radius,preload("res://scripts/world_effect_art.gd").color_for(element),Vector2.UP,.55,element)
+			fx.ring(h.p,h.radius,Color("#ff7089"))
 			if player.global_position.distance_to(h.p) < h.radius+20:
 				player.hurt(h.damage)
 
@@ -662,23 +655,24 @@ func load_settings() -> void:
 func _draw() -> void:
 	if rooms.active: rooms.draw_objective()
 	for h in hazards:
-		preload("res://scripts/world_effect_art.gd").warning(self,h.p,h.radius,1.0-h.t/h.max,h.get("element","ember"),effects_intensity,reduced_motion)
+		draw_circle(h.p,h.radius,Color(1,0.2,0.35,0.13))
+		draw_arc(h.p,h.radius,0,TAU,48,Color("#ff8194"),3,true)
+		draw_circle(h.p,h.radius*(1.0-h.t/h.max),Color(1,0.3,0.4,0.14))
 	for drop in pickups:
-		preload("res://scripts/skill_textures.gd").glow(self,drop.p,Vector2(42,35),0,Color(.45,.94,.68,.35))
 		draw_circle(drop.p,12,Color("#345e51"))
 		draw_line(drop.p-Vector2(6,0),drop.p+Vector2(6,0),Color("#a2f0b7"),4)
 		draw_line(drop.p-Vector2(0,6),drop.p+Vector2(0,6),Color("#a2f0b7"),4)
 
 	for zone in zones:
 		var color = Color("#efbb6f") if zone.kind=="powder" else Color("#92d5ee")
-		preload("res://scripts/world_effect_art.gd").vortex(self,zone.p,zone.r,Color(color,.23),elapsed*.15,effects_intensity,not reduced_motion)
-		draw_arc(zone.p,zone.r,0,TAU,48,Color(color,0.28),1.5,true)
+		draw_circle(zone.p,zone.r,Color(color,0.06))
+		draw_arc(zone.p,zone.r,0,TAU,48,Color(color,0.5),2,true)
 	for drop in loot:
 		var col = Color("#e7c980")
 		if not drop.gear.is_empty():
 			col = Color(Catalog.COLORS[int(drop.gear.quality)])
-			preload("res://scripts/skill_textures.gd").glow(self,drop.p-Vector2(0,30),Vector2(15,78),0,Color(col,.7))
-			preload("res://scripts/world_effect_art.gd").vortex(self,drop.p,19,Color(col,.65),0,.3,false)
+			draw_line(drop.p,drop.p-Vector2(0,65),Color(col,0.45),6)
+			draw_arc(drop.p,18,0,TAU,20,col,2,true)
 		draw_circle(drop.p,8,col)
 		draw_colored_polygon(PackedVector2Array([drop.p+Vector2(13,-9),drop.p+Vector2(19,0),drop.p+Vector2(13,9),drop.p+Vector2(7,0)]),Color("#83c8f7"))
 

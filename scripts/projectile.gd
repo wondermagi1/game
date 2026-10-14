@@ -12,8 +12,6 @@ var damage: float = 20.0
 var remaining: float = 700.0
 var traveled: float = 0.0
 var enemy_shot: bool = false
-var enemy_school: String = "ember"
-var boss_shot: bool = false
 var style: int = 0
 var pierce: int = 1
 var bounce: int = 0
@@ -162,7 +160,9 @@ func _draw() -> void:
 	# Ground-plane physics stays unchanged; this is the weapon-height projection.
 	draw_set_transform(display_offset().rotated(-rotation))
 	if bubble:
-		preload("res://scripts/world_effect_art.gd").enemy_orb(self,"water",boss_shot,true)
+		draw_circle(Vector2.ZERO,12,Color(.4,.82,.91,.30))
+		draw_arc(Vector2.ZERO,12,0,TAU,24,Color("#b3edf3"),2,true)
+		draw_circle(Vector2(-4,-4),3,Color("#f0fffa"))
 		return
 	if body_length>0:
 		if style==1:
@@ -172,7 +172,8 @@ func _draw() -> void:
 			preload("res://scripts/skill_art.gd").weapon(self,style,body_length,hit_width*0.6,tint)
 		return
 	if enemy_shot:
-		preload("res://scripts/world_effect_art.gd").enemy_orb(self,enemy_school,boss_shot,false)
+		draw_circle(Vector2.ZERO,9,Color("#ff657c"))
+		draw_circle(Vector2(-2,-2),4,Color("#ffe2be"))
 	elif explosion > 0:
 		preload("res://scripts/skill_textures.gd").grenade(self,30,lifetime*1.5)
 	elif style == 0:
