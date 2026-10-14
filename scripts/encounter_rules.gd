@@ -19,6 +19,6 @@ func tick(game, delta: float) -> void:
 		game.notify_player("熔炉升温 · 横向火带留有缺口",2)
 	else:
 		var center: Vector2 = game.player.global_position
-		game.add_hazard(center,95,1.8,22)
-		game.add_hazard(game.safe_position(center+Vector2(160,0)),65,2.3,18)
+		game.add_hazard(center,95,1.8,22,"astral")
+		game.add_hazard(game.safe_position(center+Vector2(160,0)),65,2.3,18,"astral")
 		game.notify_player("星蚀锁定 · 离开光印",2)

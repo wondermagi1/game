@@ -1,6 +1,7 @@
 extends CharacterBody2D
 const Visual = preload("res://scripts/actor_visual.gd")
 const V7 = preload("res://scripts/v7_catalog.gd")
+const WorldArt = preload("res://scripts/world_effect_art.gd")
 var blast_mark: float = 0
 var ward: float = 0
 var fragment: bool = false
@@ -43,11 +44,13 @@ var summoned_copy: bool = false
 var last_source: String = ""
 var hit_stop: float = 0.0
 var armored_broken: bool = false
+var charge_fx_clock: float = 0.0
 
 func is_boss() -> bool:
 	return kind in [4,5,6,7,8,12,13,14]
 
 func _ready() -> void:
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	collision_layer = 4
 	collision_mask = 1
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
@@ -94,6 +97,7 @@ func _physics_process(delta: float) -> void:
 	if game.state != "combat" or dead: return
 	if state == "spawn":
 		timer -= delta
+		queue_redraw()
 		visual.modulate.a = 0.5
 		if timer <= 0:
 			state = "move"
@@ -133,15 +137,20 @@ func _physics_process(delta: float) -> void:
 		game.clear_enemy_attacks()
 		game.banner = game.Catalog.ENEMIES[kind]+" · 第二阶段"
 		game.banner_time = 2.0
-		game.fx.ring(global_position,180,Color("#f9a0b9"))
+		game.fx.boss_cast(global_position,kind,locked_dir,true)
 	if state == "windup":
 		timer -= delta
 		if timer <= 0: execute_attack()
 	elif state == "charge":
 		timer -= delta
+		charge_fx_clock -= delta
+		if charge_fx_clock<=0:
+			charge_fx_clock = .14 if game.effects_intensity<.5 else .08
+			game.fx.surge("charge_wake",global_position-locked_dir*25,radius,WorldArt.color_for(WorldArt.school(kind)),locked_dir,.32)
 		velocity = locked_dir*(640.0 if kind == 1 else 740.0)
 		if distance < radius+28: hit_player(damage)
 		if timer <= 0 or is_on_wall():
+			if is_boss(): game.fx.surge("impact",global_position,radius*2,WorldArt.color_for(WorldArt.school(kind)),locked_dir,.35,WorldArt.school(kind))
 			state = "recover"
 			timer = 0.6
 	elif state == "recover":
@@ -187,6 +196,7 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 func execute_attack() -> void:
+	if is_boss(): game.fx.boss_cast(global_position,kind,locked_dir)
 	state = "recover"
 	timer = 0.45
 	cooldown = 1.5
@@ -208,7 +218,7 @@ func execute_attack() -> void:
 			game.fx.ring(global_position,250,Color("#7dbbdc"))
 			cooldown = 8
 		11:
-			game.add_hazard(game.player.global_position,80,1.3,damage)
+			hazard(game.player.global_position,80,1.3,damage)
 			cooldown = 3.2
 		15:
 			for ally in game.enemies:
@@ -218,7 +228,7 @@ func execute_attack() -> void:
 			game.fx.ring(global_position,280,Color("#ffe08a"))
 			cooldown = 6.5
 		16:
-			game.add_hazard(game.player.global_position,105,1.0,damage*0.55)
+			hazard(game.player.global_position,105,1.0,damage*0.55)
 			game.player.slow_time = maxf(game.player.slow_time,2.5)
 			game.fx.sigils(game.player.global_position,105,Color("#9ddf9a"),2)
 			cooldown = 4.5
@@ -242,7 +252,7 @@ func execute_attack() -> void:
 		12:
 			var gap = pattern%5
 			for i in range(5):
-				if i!=gap: game.add_hazard(Vector2(game.ARENA.position.x+230+i*310,game.player.global_position.y),95,1.6,damage)
+				if i!=gap: hazard(Vector2(game.ARENA.position.x+230+i*310,game.player.global_position.y),95,1.6,damage)
 			if pattern%4==0 and game.enemies.size()<5: game.spawn_enemy(9,game.safe_position(global_position+Vector2(130,80)))
 			if second_phase:
 				for i in range(6): shoot(locked_dir.rotated((i-2.5)*0.2),250,damage)
@@ -252,7 +262,7 @@ func execute_attack() -> void:
 			for i in range(16):
 				if (i+pattern)%8 in [0,1,2]: continue
 				shoot(Vector2.from_angle(i*TAU/16+pattern*0.12),250,damage)
-			game.add_hazard(game.player.global_position,90,1.6,damage)
+			hazard(game.player.global_position,90,1.6,damage)
 			if second_phase and pattern%4==0 and game.enemies.size()<5: game.spawn_enemy(11,game.random_spawn())
 			pattern += 1
 			cooldown = 2.6 if second_phase else 3.2
@@ -279,10 +289,10 @@ func execute_attack() -> void:
 				1:
 					for i in range(9): shoot(locked_dir.rotated((i-4)*0.16),300,damage)
 				2:
-					game.add_hazard(game.player.global_position,95,1.0,damage*1.2)
+					hazard(game.player.global_position,95,1.0,damage*1.2)
 					if second_phase:
-						game.add_hazard(game.safe_position(game.player.global_position+Vector2(150,0)),80,1.3,damage)
-						game.add_hazard(game.safe_position(game.player.global_position-Vector2(150,0)),80,1.3,damage)
+						hazard(game.safe_position(game.player.global_position+Vector2(150,0)),80,1.3,damage)
+						hazard(game.safe_position(game.player.global_position-Vector2(150,0)),80,1.3,damage)
 			pattern += 1
 			cooldown = 1.3 if second_phase else 1.8
 
@@ -308,14 +318,23 @@ func execute_attack() -> void:
 					shoot(Vector2.from_angle(i*TAU/18+pattern*0.17),240,damage)
 			else:
 				var center: Vector2 = game.player.global_position
-				game.add_hazard(center,105,1.15,damage)
-				game.add_hazard(game.safe_position(center+locked_dir*150),85,1.6,damage)
-				if second_phase: game.add_hazard(game.safe_position(center-locked_dir*150),70,1.8,damage)
+				hazard(center,105,1.15,damage)
+				hazard(game.safe_position(center+locked_dir*150),85,1.6,damage)
+				if second_phase: hazard(game.safe_position(center-locked_dir*150),70,1.8,damage)
 			pattern += 1
 			cooldown = 1.4 if second_phase else 1.9
 
 func shoot(dir: Vector2, shot_speed: float, amount: float) -> void:
-	game.spawn_projectile(global_position+dir*(radius+12),dir,{"enemy_shot":true,"damage":amount,"speed":shot_speed,"remaining":1700.0})
+	game.spawn_projectile(global_position+dir*(radius+12),dir,{"enemy_shot":true,"damage":amount,"speed":shot_speed,"remaining":1700.0,"enemy_school":WorldArt.school(kind),"boss_shot":is_boss()})
+
+func hazard(pos: Vector2, effect_radius: float, delay: float, amount: float) -> void:
+	game.add_hazard(pos,effect_radius,delay,amount,WorldArt.school(kind))
+
+func is_charge_windup() -> bool:
+	return state=="windup" and (kind==1 or (kind==4 and pattern%3==0) or (kind==6 and pattern%2==0))
+
+func charge_length() -> float:
+	return 384.0 if kind==1 else (481.0 if kind==4 else 281.2)
 
 func hit_player(amount: float) -> void:
 	game.player.hurt(amount)
@@ -349,6 +368,8 @@ func hurt(raw: float, critical: bool = false, apply_status: bool = true, source:
 	var amount = clampf(raw*100.0/(100.0+armor),1.0,1.0e15)
 	var absorbed = minf(ward,amount)
 	ward -= absorbed
+	if absorbed>0 and ward<=0:
+		game.fx.surge("shield_break",global_position,radius+12,Color("#b5b1f1"),Vector2.UP,.4)
 	amount -= absorbed
 	hp -= amount
 	last_source = "status" if not apply_status else source
@@ -394,7 +415,7 @@ func die() -> void:
 	game.fx.burst(global_position,visual.tint,18 if is_boss() else 8)
 	game.sound.enemy_voice(kind)
 	if elite_modifiers.has("volatile"):
-		game.add_hazard(global_position,125,0.85,damage*1.25)
+		hazard(global_position,125,0.85,damage*1.25)
 		game.explode(global_position,125,damage*0.8,false)
 	var corpse = preload("res://scripts/actor_visual.gd").new()
 	corpse.kind = visual.kind
@@ -437,27 +458,24 @@ func die() -> void:
 
 func _draw() -> void:
 	if state == "spawn":
-		draw_arc(Vector2.ZERO,45+timer*20,0,TAU,40,Color(1,0.4,0.5,0.6),3,true)
+		WorldArt.spawn_portal(self,Vector2.ZERO,radius+35,clampf(1.0-timer/.8,0,1),game.effects_intensity,game.reduced_motion)
 		return
 	if state == "windup":
-		if kind in [1,4,6]:
-			draw_line(Vector2.ZERO,locked_dir*440,Color(1,0.3,0.4,0.30),24,true)
-			draw_line(Vector2.ZERO,locked_dir*440,Color("#ff8e87"),2,true)
-		else:
-			draw_arc(Vector2.ZERO,radius+15,0,TAU,40,Color("#ff9b88"),4,true)
+		var progress: float = clampf(1.0-timer/(.85 if is_boss() else .75),0,1)
+		WorldArt.vortex(self,Vector2.ZERO,radius+18,Color(WorldArt.color_for(WorldArt.school(kind)),.3+.3*progress),progress,game.effects_intensity,not game.reduced_motion)
+		if is_charge_windup(): WorldArt.charge_lane(self,Vector2.ZERO,locked_dir,charge_length(),radius+28,progress)
 	if hp < max_hp and not is_boss():
 		draw_rect(Rect2(-28,-59,56,5),Color("#291e2c"))
 		draw_rect(Rect2(-28,-59,56*maxf(0,hp/max_hp),5),Color("#ee909b"))
 	if burn_time > 0: draw_circle(Vector2(-12,-68),5,Color("#ffb563"))
 	if poison_time > 0: draw_circle(Vector2(10,-68),5,Color("#a6ed80"))
 
-	if ward>0: draw_arc(Vector2.ZERO,radius+8,0,TAU,6,Color("#7dbbdc"),4,true)
 	if blast_mark>0:
 		draw_arc(Vector2.ZERO,radius+12,0,TAU*blast_mark/6,32,Color("#ffb45b"),4,true)
 		draw_circle(Vector2(0,-radius-14),7,Color("#ffb45b"))
 	if mark_time>0:
 		draw_arc(Vector2.ZERO,radius+10,0,TAU,4,Color("#c5ed99"),3,true)
-	if slow_time>0: draw_arc(Vector2.ZERO,radius+5,0,TAU,24,Color("#8cd3ff"),2,true)
+	if slow_time>0: WorldArt.sprite(self,WorldArt.SHIELD,Vector2(0,-6),Vector2(radius*2.6,radius*1.5),0,Color(.52,.82,1,.4))
 	if sword_mark>0 or powder_mark>0: draw_circle(Vector2(0,-radius-22),6,Color("#f1dc9a"))
 	if hunt_stacks>0:
 		draw_string(ThemeDB.fallback_font,Vector2(-7,-radius-28),str(hunt_stacks),HORIZONTAL_ALIGNMENT_LEFT,-1,18,Color("#ffd978"))

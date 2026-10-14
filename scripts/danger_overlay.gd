@@ -13,4 +13,9 @@ func _draw() -> void:
 	for enemy in game.enemies:
 		if enemy.state=="windup":
 			draw_arc(enemy.position,enemy.radius+18,0,TAU,32,Color("#ff8d9a"),3,true)
-			if enemy.kind in [1,4,6]: draw_line(enemy.position,enemy.position+enemy.locked_dir*440,Color(1,0.35,0.45,0.8),3,true)
+			if enemy.is_charge_windup():
+				var side: Vector2 = enemy.locked_dir.orthogonal()*(enemy.radius+28)
+				var finish: Vector2 = enemy.position+enemy.locked_dir*enemy.charge_length()
+				draw_line(enemy.position+side,finish+side,Color(1,.48,.56,.65),2,true)
+				draw_line(enemy.position-side,finish-side,Color(1,.48,.56,.65),2,true)
+				draw_arc(finish,enemy.radius+28,enemy.locked_dir.angle()-PI/2,enemy.locked_dir.angle()+PI/2,20,Color(1,.48,.56,.65),2,true)
