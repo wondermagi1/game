@@ -1,0 +1,38 @@
+[
+	{
+		"cleared": 3,
+		"core": 100.0,
+		"gold": 420,
+		"hero_hp": 110.0,
+		"kills": 76,
+		"leaks": 0,
+		"remaining_budget": 12497,
+		"role": 0,
+		"seconds": 91.6,
+		"won": true
+	},
+	{
+		"cleared": 3,
+		"core": 100.0,
+		"gold": 420,
+		"hero_hp": 100.0,
+		"kills": 76,
+		"leaks": 0,
+		"remaining_budget": 12555,
+		"role": 1,
+		"seconds": 90.7,
+		"won": true
+	},
+	{
+		"cleared": 3,
+		"core": 100.0,
+		"gold": 420,
+		"hero_hp": 90.0,
+		"kills": 76,
+		"leaks": 0,
+		"remaining_budget": 12663,
+		"role": 2,
+		"seconds": 88.9,
+		"won": true
+	}
+]

@@ -181,8 +181,9 @@ func show_menu() -> void:
 		button(overlay,"放弃…",Rect2(1686,850,120,57),confirm_abandon)
 	else:
 		label(overlay,"选择行者，开启下一段旅程",Rect2(1474,845,332,57),19,SOFT_TEXT)
-	label(overlay,"成长永久保留 · 局内构筑随远征重启",Rect2(80,981,760,52),20,SOFT_TEXT)
-	button(overlay,"持械动作检视",Rect2(990,980,275,55),show_action_inspector,Color("#9edccc"))
+	label(overlay,"成长永久保留 · 局内构筑随远征重启",Rect2(80,981,700,52),20,SOFT_TEXT)
+	button(overlay,"遗迹守卫",Rect2(800,980,230,55),func(): game.profile.save_profile(); get_tree().change_scene_to_file("res://scenes/TowerDefense.tscn"),Color("#dec48c"))
+	button(overlay,"持械动作检视",Rect2(1045,980,225,55),show_action_inspector,Color("#9edccc"))
 	button(overlay,"奇遇 · 噜噜温泉",Rect2(1285,980,330,55),show_lulu_select,Color("#9edccc"))
 	button(overlay,"退出游戏",Rect2(1635,980,195,55),func(): game.profile.save_profile(); get_tree().quit())
 
